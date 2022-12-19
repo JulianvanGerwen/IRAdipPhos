@@ -1,0 +1,191 @@
+---
+title: "01__filt_norm__2"
+output: html_document
+---
+
+Background
+
+Here I process columns, filter, and normalise
+
+
+
+
+
+
+
+###Initialise
+
+###Read in data
+```{r}
+phos_3t3_raw <- read.table("data/raw/3T3L1_IR__phos__DF__202104__SN-peptide collapsed.txt",
+                           sep = "\t",
+                           header = TRUE)
+```
+
+###Process columns
+```{r}
+###Gene
+phos_3t3_raw$gene <- sapply(phos_3t3_raw$PTM_collapse_key,
+                            function(x) strsplit(x, "_")[[1]][1])
+
+###Uniprot
+#Pick the uniprot that matches the main gene sean took
+#If there is no gene to take, jut pick first uniprot
+for (i in 1:nrow(phos_3t3_raw)){
+  
+  possible_uniprots <- strsplit(phos_3t3_raw$PG.UniProtIds[i],
+                                ";")[[1]]
+  
+  if (length(possible_uniprots) == 1){
+    
+    phos_3t3_raw$uniprot[i] <- possible_uniprots
+  } else if(is.na(phos_3t3_raw$gene[i])){
+    
+    phos_3t3_raw$uniprot[i] <- possible_uniprots[1]
+  } else {
+    
+    possible_genes <- strsplit(phos_3t3_raw$PG.Genes[i],
+                               ";")[[1]]
+    phos_3t3_raw$uniprot[i] <- possible_uniprots[which(possible_genes ==
+                                                         phos_3t3_raw$gene[i])]
+  }
+}
+
+
+###Site
+phos_3t3_raw$site <- sapply(phos_3t3_raw$PTM_collapse_key,
+                            function(x) strsplit(x, "_")[[1]][2])
+
+###Multiplicity
+phos_3t3_raw$multiplicity <- sapply(phos_3t3_raw$PTM_collapse_key,
+                            function(x) strsplit(x, "_M")[[1]][2])
+
+
+###Uniprot site
+phos_3t3_raw$uniprot_site <- apply(phos_3t3_raw[, c("uniprot",
+                                                    "site")],
+                                   1,
+                                   function(x) paste(x, collapse = "_"))
+
+###standard_name
+phos_3t3_raw$standard_name <- apply(phos_3t3_raw[, c("gene",
+                                                     "uniprot",
+                                                     "site",
+                                                     "multiplicity")],
+                                    1,
+                                    function(x) paste(x, collapse = "_"))
+```
+
+
+###BIg numbers
+```{r}
+##Quantified in at least one sample
+#39846 ppeptides
+#29311 psites
+#3791 pproteins
+length(which(rowSums(is.na(phos_3t3_raw[, 1:52])) < 52))
+length(unique(phos_3t3_raw$uniprot_site[which(rowSums(is.na(phos_3t3_raw[, 1:52])) < 52)]))
+length(unique(phos_3t3_raw$uniprot[which(rowSums(is.na(phos_3t3_raw[, 1:52])) < 52)]))
+
+
+##Quantified in all samples
+#7386 ppeptides
+length(which(rowSums(is.na(phos_3t3_raw[, 1:52])) == 0))
+```
+
+
+###Filtering for no NA in names
+
+```{r}
+phos_3t3_filt <- phos_3t3_raw
+
+###Remove sites with NA for PTM
+#This is only the 32 sites at the top without gene names
+phos_3t3_filt <- phos_3t3_filt[which(is.na(phos_3t3_filt$site) == FALSE), ]
+
+
+###Make rownames
+rownames(phos_3t3_filt) <- phos_3t3_filt$standard_name
+```
+
+
+
+
+###Normalisation
+
+```{r}
+###Visualise before normalisation:
+pdf("output/images/processing/boxplot_before_norm.pdf")
+boxplot(phos_3t3_filt[, 1:52], las = 2, pch = 20, cex = 0.5)
+dev.off()
+
+###Median-normalise:
+medians <- apply(phos_3t3_filt[, 1:52], 2, FUN = median, na.rm = TRUE)
+overall_median <- median(medians)
+med_diffs <- medians - overall_median
+phos_3t3_filt_norm <- phos_3t3_filt
+phos_3t3_filt_norm[, 1:52] <- sweep(phos_3t3_filt_norm[, 1:52], 2, med_diffs, FUN = "-")
+
+###Visualise after normalisation:
+pdf("output/images/processing/boxplot_after_norm.pdf")
+boxplot(phos_3t3_filt_norm[, 1:52], las = 2, pch = 20, cex = 0.5)
+dev.off()
+```
+
+
+###Output
+```{r}
+###phos_3t3_raw
+save(phos_3t3_raw,
+     file = "output/data/phos_3t3_raw__1.RData")
+
+###phos_3t3_filt
+#The only actual filtering that has been done is removing the first 32 rows, which did not have gene names
+save(phos_3t3_filt,
+     file = "output/data/phos_3t3_filt__1.RData")
+
+###phos_3t3_filt_norm
+#Above but normalised
+#This is what I will take into further analysis
+save(phos_3t3_filt_norm,
+     file = "output/data/phos_3t3_filt_norm__1.RData")
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

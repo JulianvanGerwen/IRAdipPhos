@@ -1,0 +1,205 @@
+---
+title: "04__stats_FC_gsk3i__4"
+output: html_document
+---
+
+
+
+Background
+
+Here I do stats and add FCs
+
+
+
+###Initialise
+
+Packages
+```{r}
+library(multcomp)
+```
+
+
+###Load in data
+```{r}
+load("data/intermediate/phos_gsk3i_raw_norm_imp_below_ds1_looser__1.RData")
+
+phos_gsk3i_raw_norm_imp_below_ds1_looser_strin2stats <- phos_gsk3i_raw_norm_imp_below_ds1_looser
+```
+
+
+
+
+
+###Filter before tests
+```{r}
+####NA in each model
+conditions <- c("Basal",
+                "GSK3i")
+NA_per_condition_m <- matrix(0,
+                             nrow = nrow(phos_gsk3i_raw_norm_imp_below_ds1_looser_strin2stats),
+                             ncol = length(conditions))
+rownames(NA_per_condition_m) <- rownames(phos_gsk3i_raw_norm_imp_below_ds1_looser_strin2stats)
+colnames(NA_per_condition_m) <- conditions
+
+for (j in 1:length(conditions)){
+  
+  NA_per_condition_m[, j] <- rowSums(is.na(phos_gsk3i_raw_norm_imp_below_ds1_looser_strin2stats[, grep(paste(c(conditions[j],
+                                                                                  "_\\d+"),
+                                                                                collapse = ""),
+                                                                          colnames(phos_gsk3i_raw_norm_imp_below_ds1_looser_strin2stats))]))
+}
+
+
+####Filter before t-test
+#In >=2 samples
+phos_gsk3i_raw_norm_imp_below_ds1_looser_strin2stats_tfilt <- phos_gsk3i_raw_norm_imp_below_ds1_looser_strin2stats[which(NA_per_condition_m[, "Basal"] <= 2 &
+                                                               NA_per_condition_m[, "GSK3i"] <= 2), ]
+
+
+
+#Summary
+#11441/14778 pass filtering
+nrow(phos_gsk3i_raw_norm_imp_below_ds1_looser_strin2stats_tfilt)
+nrow(phos_gsk3i_raw_norm_imp_below_ds1_looser_strin2stats)
+```
+
+
+###t-tests
+```{r}
+###run t.tests
+for (i in 1:nrow(phos_gsk3i_raw_norm_imp_below_ds1_looser_strin2stats_tfilt)){
+  test <- try(t.test(phos_gsk3i_raw_norm_imp_below_ds1_looser_strin2stats_tfilt[i, 1:4],
+                 phos_gsk3i_raw_norm_imp_below_ds1_looser_strin2stats_tfilt[i, 5:8],
+                 alternative = "two.sided",
+                 paired = FALSE),
+              silent = TRUE)
+  
+  if (inherits(test, "try-error")){
+    
+    phos_gsk3i_raw_norm_imp_below_ds1_looser_strin2stats_tfilt$t[i] <- NA
+    phos_gsk3i_raw_norm_imp_below_ds1_looser_strin2stats_tfilt$p_val[i] <- NA
+    
+  } else {
+    
+    phos_gsk3i_raw_norm_imp_below_ds1_looser_strin2stats_tfilt$t[i] <- test$statistic
+    phos_gsk3i_raw_norm_imp_below_ds1_looser_strin2stats_tfilt$p_val[i] <- test$p.value
+    
+  }
+  
+}
+
+phos_gsk3i_raw_norm_imp_below_ds1_looser_strin2stats_tfilt$adj_p_val <- p.adjust(phos_gsk3i_raw_norm_imp_below_ds1_looser_strin2stats_tfilt$p_val,
+         method = "fdr")
+
+
+
+
+###Combine
+for (i in 1:nrow(phos_gsk3i_raw_norm_imp_below_ds1_looser_strin2stats)){
+  
+  if (rownames(phos_gsk3i_raw_norm_imp_below_ds1_looser_strin2stats)[i] %in%
+      rownames(phos_gsk3i_raw_norm_imp_below_ds1_looser_strin2stats_tfilt)){
+    
+    phos_gsk3i_raw_norm_imp_below_ds1_looser_strin2stats[i, c("t",
+                                                 "p_val",
+                                                 "adj_p_val")] <- 
+      phos_gsk3i_raw_norm_imp_below_ds1_looser_strin2stats_tfilt[which(rownames(phos_gsk3i_raw_norm_imp_below_ds1_looser_strin2stats_tfilt) ==
+                                                            rownames(phos_gsk3i_raw_norm_imp_below_ds1_looser_strin2stats)[i]), 
+                                                    c("t",
+                                                      "p_val",
+                                                      "adj_p_val")]
+      }
+}
+
+
+###Summary
+#935 significant. This is less that half what we had last time (1081)
+length(which(phos_gsk3i_raw_norm_imp_below_ds1_looser_strin2stats_tfilt$adj_p_val < 0.05))
+
+##Sig and imputed
+#154/320 Basal impute
+#306/525 GSK3i impute
+length(which(phos_gsk3i_raw_norm_imp_below_ds1_looser_strin2stats$Basal_blockimp == TRUE))
+length(which(phos_gsk3i_raw_norm_imp_below_ds1_looser_strin2stats$Basal_blockimp == TRUE &
+               phos_gsk3i_raw_norm_imp_below_ds1_looser_strin2stats$adj_p_val < 0.05))
+length(which(phos_gsk3i_raw_norm_imp_below_ds1_looser_strin2stats$GSK3i_blockimp == TRUE))
+length(which(phos_gsk3i_raw_norm_imp_below_ds1_looser_strin2stats$GSK3i_blockimp == TRUE &
+               phos_gsk3i_raw_norm_imp_below_ds1_looser_strin2stats$adj_p_val < 0.05))
+```
+
+
+###FC and up/down
+```{r}
+phos_gsk3i_raw_norm_imp_below_ds1_looser_strin2stats$FC <- 
+  apply(phos_gsk3i_raw_norm_imp_below_ds1_looser_strin2stats[, 5:8],
+        1,
+        FUN = "median",
+        na.rm = TRUE) - 
+  apply(phos_gsk3i_raw_norm_imp_below_ds1_looser_strin2stats[, 1:4],
+        1,
+        FUN = "median",
+        na.rm = TRUE)
+
+length(which(phos_gsk3i_raw_norm_imp_below_ds1_looser_strin2stats$adj_p_val < 0.05 &
+               phos_gsk3i_raw_norm_imp_below_ds1_looser_strin2stats$FC < -0.58))
+
+phos_gsk3i_raw_norm_imp_below_ds1_looser_strin2stats$GSK3i_up <- FALSE
+phos_gsk3i_raw_norm_imp_below_ds1_looser_strin2stats[which(phos_gsk3i_raw_norm_imp_below_ds1_looser_strin2stats$adj_p_val < 0.05 &
+                                                             phos_gsk3i_raw_norm_imp_below_ds1_looser_strin2stats$FC > 0.58),
+                                                     "GSK3i_up"] <- TRUE
+phos_gsk3i_raw_norm_imp_below_ds1_looser_strin2stats$GSK3i_down <- FALSE
+phos_gsk3i_raw_norm_imp_below_ds1_looser_strin2stats[which(phos_gsk3i_raw_norm_imp_below_ds1_looser_strin2stats$adj_p_val < 0.05 &
+                                                             phos_gsk3i_raw_norm_imp_below_ds1_looser_strin2stats$FC < -0.58),
+                                                     "GSK3i_down"] <- TRUE
+```
+
+
+
+###Export
+```{r}
+save(phos_gsk3i_raw_norm_imp_below_ds1_looser_strin2stats,
+     file = "output/data/phos_gsk3i_raw_norm_imp_below_ds1_looser_strin2stats__1.RData")
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

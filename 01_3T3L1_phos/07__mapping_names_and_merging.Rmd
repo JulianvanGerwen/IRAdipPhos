@@ -1,0 +1,652 @@
+---
+title: "08__mapping_names_and_merging__3"
+output: html_document
+---
+
+
+Background
+
+Here I map uniprots and gene names from related databases so they line up - cell proteome, mouse phospho, GSK3i phospho
+
+I also add proteome data to phos data where possible
+
+
+
+
+
+###Initialise
+
+Packages
+```{r}
+library(reshape2)
+source("..\\scripts/3T3L1_mouse_IR__DF__202104_functions.R")
+```
+
+
+###Load in data
+```{r}
+load("data/intermediate/phos_3t3/phos_3t3_filt_norm_imp_below_ds1_looserstats_stats_cols_regdef__1.RData")
+phos_3t3_filt_norm_imp_below_ds1_looserstats_stats_cols_regdef_mapped <- phos_3t3_filt_norm_imp_below_ds1_looserstats_stats_cols_regdef
+```
+
+
+###Proteome
+
+Load in data
+```{r}
+load("data/intermediate/prot_3t3/proteome_raw_3t3_ddamatched.RData")
+```
+
+
+Map proteome genes and uniprots to DIA phospho
+```{r}
+proteome_raw_3t3_DIA_matched <- proteome_raw_3t3
+
+
+###Assign old rownames
+proteome_raw_3t3_DIA_matched$old_rownames <- rownames(proteome_raw_3t3)
+
+###Make uniprots
+
+#Use Majority.protein.IDs. Difference compared to Protein.IDs. is very little, and with Majority.protein.IDs we get more with only 1 match
+proteome_raw_3t3_DIA_matched$new_uniprot <- uniprot_proteome_from_phos_matcher(old_uniprots = proteome_raw_3t3_DIA_matched$uniprot,
+                                                            possible_uniprots_col = proteome_raw_3t3_DIA_matched$Majority.protein.IDs,
+                                                            destination_uniprots = phos_3t3_filt_norm_imp_below_ds1_looserstats_stats_cols_regdef$uniprot)
+
+###Make gene names
+#Take gene name associated with phospho, by matching uniprots
+proteome_raw_3t3_DIA_matched$new_gene <- proteome_raw_3t3_DIA_matched$gene
+matches_num_vector <- NULL
+for (i in 1:nrow(proteome_raw_3t3_DIA_matched)){
+  
+  temp_uniprot <- proteome_raw_3t3_DIA_matched[i, "new_uniprot"]
+  if (temp_uniprot %in%
+      phos_3t3_filt_norm_imp_below_ds1_looserstats_stats_cols_regdef$uniprot){
+    
+    matches_num_vector[i] <- length(unique(phos_3t3_filt_norm_imp_below_ds1_looserstats_stats_cols_regdef[which(phos_3t3_filt_norm_imp_below_ds1_looserstats_stats_cols_regdef$uniprot ==
+                                                             temp_uniprot),
+                                                     "gene_name"]))
+    #Only assign if exactly one gene match
+    if(matches_num_vector[i] == 1){
+      
+      proteome_raw_3t3_DIA_matched[i, "new_gene"] <- unique(phos_3t3_filt_norm_imp_below_ds1_looserstats_stats_cols_regdef[which(phos_3t3_filt_norm_imp_below_ds1_looserstats_stats_cols_regdef$uniprot ==
+                                                             temp_uniprot),
+                                                     "gene_name"])
+    #Fuse matches if multiple
+    } else if (matches_num_vector[i] > 1){
+      proteome_raw_3t3_DIA_matched[i, "new_gene"] <- paste(unique(phos_3t3_filt_norm_imp_below_ds1_looserstats_stats_cols_regdef[which(phos_3t3_filt_norm_imp_below_ds1_looserstats_stats_cols_regdef$uniprot ==
+                                                             temp_uniprot),
+                                                     "gene_name"]),
+                                                     collapse = "___")
+      
+    }
+      }
+}
+
+
+##Deal with double and triple matches
+#None
+proteome_raw_3t3_DIA_matched[grep("___",
+                       proteome_raw_3t3_DIA_matched$new_gene), ]
+
+##Deal with NAs
+#If NA or "", just give old name
+#None
+proteome_raw_3t3_DIA_matched[which(is.na(proteome_raw_3t3_DIA_matched$new_gene) |
+                                     proteome_raw_3t3_DIA_matched$new_gene == ""), ]
+
+
+###Make new row names, and uniprot and gene
+proteome_raw_3t3_DIA_matched$new_rownames <- apply(proteome_raw_3t3_DIA_matched[, c("new_gene",
+                                              "new_uniprot")],
+                                1,
+                                function(x) paste(x, 
+                                                  collapse = "_"))
+rownames(proteome_raw_3t3_DIA_matched) <- proteome_raw_3t3_DIA_matched$new_rownames
+proteome_raw_3t3_DIA_matched$uniprot <- sapply(rownames(proteome_raw_3t3_DIA_matched),
+                            function(x) strsplit(x, "_")[[1]][2])
+proteome_raw_3t3_DIA_matched$gene <- sapply(rownames(proteome_raw_3t3_DIA_matched),
+                            function(x) strsplit(x, "_")[[1]][1])
+```
+
+
+Add to processed proteome data and export
+```{r}
+###Load in processed proteome data
+load("data/intermediate/prot_3t3/proteome_post_analysis_3t3_ddamatched.RData")
+proteome_post_analysis_3t3_DIA_matched <- proteome_post_analysis_3t3
+
+###Add in new rownames, uniprots and gene names
+proteome_post_analysis_3t3_DIA_matched$old_rownames <- rownames(proteome_post_analysis_3t3)
+proteome_post_analysis_3t3_DIA_matched$old_uniprot <- proteome_post_analysis_3t3$uniprot
+proteome_post_analysis_3t3_DIA_matched$old_gene <- proteome_post_analysis_3t3$gene
+for (i in 1:nrow(proteome_post_analysis_3t3_DIA_matched)){
+  
+  proteome_post_analysis_3t3_DIA_matched$new_rownames[i] <- 
+    rownames(proteome_raw_3t3_DIA_matched[which(proteome_raw_3t3_DIA_matched$old_rownames ==
+                                                  proteome_post_analysis_3t3_DIA_matched$old_rownames[i]), ])
+}
+rownames(proteome_post_analysis_3t3_DIA_matched) <- proteome_post_analysis_3t3_DIA_matched$new_rownames
+proteome_post_analysis_3t3_DIA_matched$uniprot <- sapply(rownames(proteome_post_analysis_3t3_DIA_matched),
+                                                         function(x) strsplit(x, "_")[[1]][2])
+proteome_post_analysis_3t3_DIA_matched$gene <- sapply(rownames(proteome_post_analysis_3t3_DIA_matched),
+                                                      function(x) strsplit(x, "_")[[1]][1])
+
+###Export
+save(proteome_raw_3t3_DIA_matched,
+     file = "output/data/proteome_raw_3t3_DIA_matched.RData")
+save(proteome_post_analysis_3t3_DIA_matched,
+     file = "output/data/proteome_post_analysis_3t3_DIA_matched.RData")
+```
+
+
+Add proteome data to DIA phos
+I map over FCs, pvalues, nlogpvals,  medians, and mean_normalised_mean
+```{r}
+phos_3t3_filt_norm_imp_below_ds1_looserstats_stats_cols_regdef_mapped[, c("CI_GROUPED_FC",
+                                             "DEX_GROUPED_FC",
+                                             "TNF_GROUPED_FC",
+                                             "MPQ_GROUPED_FC",
+                                             "AA_GROUPED_FC",
+                                             "CI_GROUPED_pval",
+                                             "DEX_GROUPED_pval",
+                                             "TNF_GROUPED_pval",
+                                             "MPQ_GROUPED_pval",
+                                             "AA_GROUPED_pval",
+                                             "CI_GROUPED_adj_pval",
+                                             "DEX_GROUPED_adj_pval",
+                                             "TNF_GROUPED_adj_pval",
+                                             "MPQ_GROUPED_adj_pval",
+                                             "AA_GROUPED_adj_pval",
+                                             "CI_GROUPED_nlog_adj_pval",
+                                             "DEX_GROUPED_nlog_adj_pval",
+                                             "TNF_GROUPED_nlog_adj_pval",
+                                             "MPQ_GROUPED_nlog_adj_pval",
+                                             "AA_GROUPED_nlog_adj_pval",
+                                             "CI_GROUPED_median",
+                                             "DEX_GROUPED_median",
+                                             "TNF_GROUPED_median",
+                                             "MPQ_GROUPED_median",
+                                             "AA_GROUPED_median",
+                                             "CI_GROUPED_mean_normalised_mean",
+                                             "DEX_GROUPED_mean_normalised_mean",
+                                             "TNF_GROUPED_mean_normalised_mean",
+                                             "MPQ_GROUPED_mean_normalised_mean",
+                                             "AA_GROUPED_mean_normalised_mean",
+                                             "CTRL_BAS_PROT_2",
+                                             "CTRL_BAS_PROT_3",
+                                             "CTRL_BAS_PROT_4",
+                                             "CTRL_BAS_PROT_5",
+                                             "CTRL_BAS_PROT_6",
+                                             "CTRL_INS_PROT_1",
+                                             "CTRL_INS_PROT_2",
+                                             "CTRL_INS_PROT_3",
+                                             "CTRL_INS_PROT_4",
+                                             "CTRL_INS_PROT_5",
+                                             "CI_BAS_PROT_2",
+                                             "CI_BAS_PROT_3",
+                                             "CI_BAS_PROT_4",
+                                             "CI_INS_PROT_1",
+                                             "CI_INS_PROT_2",
+                                             "CI_INS_PROT_3",
+                                             "CI_INS_PROT_4",
+                                             "DEX_BAS_PROT_1",
+                                              "DEX_BAS_PROT_2",
+                                             "DEX_BAS_PROT_3",
+                                             "DEX_BAS_PROT_4",
+                                             "DEX_INS_PROT_1",
+                                             "DEX_INS_PROT_2",
+                                             "DEX_INS_PROT_3",
+                                             "DEX_INS_PROT_4",
+                                              "TNF_BAS_PROT_1",
+                                             "TNF_BAS_PROT_2",
+                                             "TNF_BAS_PROT_4",
+                                             "TNF_INS_PROT_1",
+                                             "TNF_INS_PROT_2",
+                                             "TNF_INS_PROT_3",
+                                             "TNF_INS_PROT_4",
+                                             "MPQ_BAS_PROT_1",
+                                              "MPQ_BAS_PROT_2",
+                                             "MPQ_BAS_PROT_3",
+                                             "MPQ_BAS_PROT_4",
+                                             "MPQ_INS_PROT_1",
+                                             "MPQ_INS_PROT_2",
+                                             "MPQ_INS_PROT_3",
+                                             "MPQ_INS_PROT_4",
+                                             "AA_BAS_PROT_1",
+                                              "AA_BAS_PROT_2",
+                                             "AA_BAS_PROT_3",
+                                             "AA_BAS_PROT_4",
+                                             "AA_INS_PROT_1",
+                                             "AA_INS_PROT_2",
+                                             "AA_INS_PROT_3",
+                                             "AA_INS_PROT_4")] <- NA
+
+
+for (i in 1:nrow(phos_3t3_filt_norm_imp_below_ds1_looserstats_stats_cols_regdef_mapped)){
+  
+  if (phos_3t3_filt_norm_imp_below_ds1_looserstats_stats_cols_regdef_mapped$gene_uniprot[i] %in%
+      rownames(proteome_post_analysis_3t3_DIA_matched)){
+        
+        phos_3t3_filt_norm_imp_below_ds1_looserstats_stats_cols_regdef_mapped[i, c("CI_GROUPED_FC",
+                                             "DEX_GROUPED_FC",
+                                             "TNF_GROUPED_FC",
+                                             "MPQ_GROUPED_FC",
+                                             "AA_GROUPED_FC",
+                                             "CI_GROUPED_pval",
+                                             "DEX_GROUPED_pval",
+                                             "TNF_GROUPED_pval",
+                                             "MPQ_GROUPED_pval",
+                                             "AA_GROUPED_pval",
+                                             "CI_GROUPED_adj_pval",
+                                             "DEX_GROUPED_adj_pval",
+                                             "TNF_GROUPED_adj_pval",
+                                             "MPQ_GROUPED_adj_pval",
+                                             "AA_GROUPED_adj_pval",
+                                             "CI_GROUPED_nlog_adj_pval",
+                                             "DEX_GROUPED_nlog_adj_pval",
+                                             "TNF_GROUPED_nlog_adj_pval",
+                                             "MPQ_GROUPED_nlog_adj_pval",
+                                             "AA_GROUPED_nlog_adj_pval",
+                                             "CI_GROUPED_median",
+                                             "DEX_GROUPED_median",
+                                             "TNF_GROUPED_median",
+                                             "MPQ_GROUPED_median",
+                                             "AA_GROUPED_median",
+                                             "CI_GROUPED_mean_normalised_mean",
+                                             "DEX_GROUPED_mean_normalised_mean",
+                                             "TNF_GROUPED_mean_normalised_mean",
+                                             "MPQ_GROUPED_mean_normalised_mean",
+                                             "AA_GROUPED_mean_normalised_mean",
+                                              "CTRL_BAS_PROT_2",
+                                             "CTRL_BAS_PROT_3",
+                                             "CTRL_BAS_PROT_4",
+                                             "CTRL_BAS_PROT_5",
+                                             "CTRL_BAS_PROT_6",
+                                             "CTRL_INS_PROT_1",
+                                             "CTRL_INS_PROT_2",
+                                             "CTRL_INS_PROT_3",
+                                             "CTRL_INS_PROT_4",
+                                             "CTRL_INS_PROT_5",
+                                             "CI_BAS_PROT_2",
+                                             "CI_BAS_PROT_3",
+                                             "CI_BAS_PROT_4",
+                                             "CI_INS_PROT_1",
+                                             "CI_INS_PROT_2",
+                                             "CI_INS_PROT_3",
+                                             "CI_INS_PROT_4",
+                                             "DEX_BAS_PROT_1",
+                                              "DEX_BAS_PROT_2",
+                                             "DEX_BAS_PROT_3",
+                                             "DEX_BAS_PROT_4",
+                                             "DEX_INS_PROT_1",
+                                             "DEX_INS_PROT_2",
+                                             "DEX_INS_PROT_3",
+                                             "DEX_INS_PROT_4",
+                                              "TNF_BAS_PROT_1",
+                                             "TNF_BAS_PROT_2",
+                                             "TNF_BAS_PROT_4",
+                                             "TNF_INS_PROT_1",
+                                             "TNF_INS_PROT_2",
+                                             "TNF_INS_PROT_3",
+                                             "TNF_INS_PROT_4",
+                                             "MPQ_BAS_PROT_1",
+                                              "MPQ_BAS_PROT_2",
+                                             "MPQ_BAS_PROT_3",
+                                             "MPQ_BAS_PROT_4",
+                                             "MPQ_INS_PROT_1",
+                                             "MPQ_INS_PROT_2",
+                                             "MPQ_INS_PROT_3",
+                                             "MPQ_INS_PROT_4",
+                                             "AA_BAS_PROT_1",
+                                              "AA_BAS_PROT_2",
+                                             "AA_BAS_PROT_3",
+                                             "AA_BAS_PROT_4",
+                                             "AA_INS_PROT_1",
+                                             "AA_INS_PROT_2",
+                                             "AA_INS_PROT_3",
+                                             "AA_INS_PROT_4")] <-
+          proteome_post_analysis_3t3_DIA_matched[which(rownames(proteome_post_analysis_3t3_DIA_matched) ==
+                                                         phos_3t3_filt_norm_imp_below_ds1_looserstats_stats_cols_regdef_mapped$gene_uniprot[i]), c("CI_GROUPED_FC",
+                                             "DEX_GROUPED_FC",
+                                             "TNF_GROUPED_FC",
+                                             "MPQ_GROUPED_FC",
+                                             "AA_GROUPED_FC",
+                                             "CI_GROUPED_pval",
+                                             "DEX_GROUPED_pval",
+                                             "TNF_GROUPED_pval",
+                                             "MPQ_GROUPED_pval",
+                                             "AA_GROUPED_pval",
+                                             "CI_GROUPED_adj_pval",
+                                             "DEX_GROUPED_adj_pval",
+                                             "TNF_GROUPED_adj_pval",
+                                             "MPQ_GROUPED_adj_pval",
+                                             "AA_GROUPED_adj_pval",
+                                             "CI_GROUPED_nlog_adj_pval",
+                                             "DEX_GROUPED_nlog_adj_pval",
+                                             "TNF_GROUPED_nlog_adj_pval",
+                                             "MPQ_GROUPED_nlog_adj_pval",
+                                             "AA_GROUPED_nlog_adj_pval",
+                                             "CI_GROUPED_median",
+                                             "DEX_GROUPED_median",
+                                             "TNF_GROUPED_median",
+                                             "MPQ_GROUPED_median",
+                                             "AA_GROUPED_median",
+                                             "CI_GROUPED_mean_normalised_mean",
+                                             "DEX_GROUPED_mean_normalised_mean",
+                                             "TNF_GROUPED_mean_normalised_mean",
+                                             "MPQ_GROUPED_mean_normalised_mean",
+                                             "AA_GROUPED_mean_normalised_mean",
+                                              "NORMAL_GROUPED_1",
+                                             "NORMAL_GROUPED_2",
+                                             "NORMAL_GROUPED_3",
+                                             "NORMAL_GROUPED_4",
+                                             "NORMAL_GROUPED_5",
+                                             "NORMAL_GROUPED_6",
+                                             "NORMAL_GROUPED_7",
+                                             "NORMAL_GROUPED_8",
+                                             "NORMAL_GROUPED_9",
+                                             "NORMAL_GROUPED_10",
+                                             "CI_GROUPED_1",
+                                             "CI_GROUPED_2",
+                                             "CI_GROUPED_3",
+                                             "CI_GROUPED_4",
+                                             "CI_GROUPED_5",
+                                             "CI_GROUPED_6",
+                                             "CI_GROUPED_7",
+                                             "DEX_GROUPED_1",
+                                              "DEX_GROUPED_2",
+                                             "DEX_GROUPED_3",
+                                             "DEX_GROUPED_4",
+                                             "DEX_GROUPED_5",
+                                             "DEX_GROUPED_6",
+                                             "DEX_GROUPED_7",
+                                             "DEX_GROUPED_8",
+                                              "TNF_GROUPED_1",
+                                             "TNF_GROUPED_2",
+                                             "TNF_GROUPED_3",
+                                             "TNF_GROUPED_4",
+                                             "TNF_GROUPED_5",
+                                             "TNF_GROUPED_6",
+                                             "TNF_GROUPED_7",
+                                             "MPQ_GROUPED_1",
+                                              "MPQ_GROUPED_2",
+                                             "MPQ_GROUPED_3",
+                                             "MPQ_GROUPED_4",
+                                             "MPQ_GROUPED_5",
+                                             "MPQ_GROUPED_6",
+                                             "MPQ_GROUPED_7",
+                                             "MPQ_GROUPED_8",
+                                             "AA_GROUPED_1",
+                                              "AA_GROUPED_2",
+                                             "AA_GROUPED_3",
+                                             "AA_GROUPED_4",
+                                             "AA_GROUPED_5",
+                                             "AA_GROUPED_6",
+                                             "AA_GROUPED_7",
+                                             "AA_GROUPED_8")]
+      }
+  
+  
+}
+
+###Make site normalised to protein
+matched_protein_conditions <- gsub("_PROT",
+                                   "",
+                                   colnames(phos_3t3_filt_norm_imp_below_ds1_looserstats_stats_cols_regdef_mapped)[grep("_PROT_",
+                                                                colnames(phos_3t3_filt_norm_imp_below_ds1_looserstats_stats_cols_regdef_mapped))])
+phos_3t3_filt_norm_imp_below_ds1_looserstats_stats_cols_regdef_mapped[, sapply(matched_protein_conditions,
+                       function(x){
+                         x_split <- strsplit(x, "_")[[1]]
+                         return(paste(c(x_split[1],
+                                        "_",
+                                        x_split[2],
+                                        "_",
+                                        "PROT_norm_",
+                                        x_split[3]),
+                                      collapse = ""))
+                       })] <-
+  phos_3t3_filt_norm_imp_below_ds1_looserstats_stats_cols_regdef_mapped[, matched_protein_conditions] -
+phos_3t3_filt_norm_imp_below_ds1_looserstats_stats_cols_regdef_mapped[, grep("_PROT_",
+                     colnames(phos_3t3_filt_norm_imp_below_ds1_looserstats_stats_cols_regdef_mapped))]
+
+
+###Add FCs, means and medians
+
+####INS_vs_BAS FCs
+
+
+###Function: Makes treatment vs basal FCs for given models
+#Data is data, columns of format MODEL_BAS/TREATMENT_n e.g. CTRL_INS_4
+#method is "median" or "mean"
+#models are models e.g. CTRL, CI, DEX
+#bas_treatment are names for basal and treatment e.g. BAS, INS
+treatment_vs_bas_logFC_maker <- function(data,
+                                         method = "median",
+                                         models,
+                                         bas_treatment){
+      
+      ##Set up output
+      FC_data <- matrix(NA,
+                        nrow = nrow(data),
+                        ncol = length(models))
+      rownames(FC_data) <- rownames(data)
+      colnames(FC_data) <- sapply(models,
+                                  function(x) paste(c(x, "_FC"),
+                                                    collapse = ""))
+      
+      ##Iterate over models
+      for (j in 1:length(models)){
+        
+        FC_data[, j] <- apply(data[, grep(paste(c(models[j],
+                                                  "_",
+                                                  bas_treatment[2],
+                                                  "_\\d+"),
+                                                collapse = ""),
+                                          colnames(data))],
+                              1,
+                              FUN = method,
+                              na.rm = TRUE) - 
+          apply(data[, grep(paste(c(models[j],
+                                                  "_",
+                                                  bas_treatment[1],
+                                                  "_\\d+"),
+                                  collapse = ""),
+                                          colnames(data))],
+                              1,
+                              FUN = method,
+                              na.rm = TRUE)
+      }
+      
+      return(FC_data)
+}
+
+
+###Assign FCs
+phos_3t3_filt_norm_imp_below_ds1_looserstats_stats_cols_regdef_mapped[, c("CTRL_PROT_norm_FC",
+                                      "CI_PROT_norm_FC",
+                                      "DEX_PROT_norm_FC",
+                                      "TNF_PROT_norm_FC",
+                                      "MPQ_PROT_norm_FC",
+                                      "AA_PROT_norm_FC")] <- 
+  treatment_vs_bas_logFC_maker(data = phos_3t3_filt_norm_imp_below_ds1_looserstats_stats_cols_regdef_mapped,
+                               method = "median",
+                               models = c("CTRL",
+           "CI",
+           "DEX",
+           "TNF",
+           "MPQ",
+           "AA"),
+           bas_treatment = c("BAS_PROT_norm",
+                   "INS_PROT_norm"))
+
+
+
+
+
+
+####Models vs ctrl
+
+
+###Function: Makes model vs ctrl FCs
+#Data is data, columns of format MODEL_BAS/TREATMENT_n e.g. CTRL_INS_4
+#method is "median" or "mean"
+#models are models e.g. CI_BAS, DEX_BAS
+#control is name for control e.g. CTRL_BAS, CTRL_INS
+model_vs_ctrl_logFC_maker <- function(data,
+                                      method = "median",
+                                      models,
+                                      control){
+
+
+    ##Set up data
+    FC_data <- matrix(NA,
+                      nrow = nrow(data),
+                      ncol = length(models))
+    rownames(FC_data) <- rownames(data)
+    colnames(FC_data) <- sapply(models,
+                                function(x) paste(c(x, "_FC"),
+                                                  collapse = ""))
+    
+    ##Get CTRL medians or (means)
+    CTRL_medians <- apply(data[, grep(paste(c(control,
+                                              "_\\d+"),
+                                            collapse = ""),
+                                      colnames(data))],
+                          1,
+                          FUN = method,
+                          na.rm = TRUE)
+    
+    ##Loop over models
+    for (j in 1:length(models)){
+      
+      FC_data[, j] <- apply(data[, grep(paste(c(models[j],
+                                              "_\\d+"),
+                                            collapse = ""),
+                                      colnames(data))],
+                          1,
+                          FUN = method,
+                          na.rm = TRUE) -
+        CTRL_medians
+    }
+    
+    return(FC_data)
+}
+
+
+###Assign FCs
+phos_3t3_filt_norm_imp_below_ds1_looserstats_stats_cols_regdef_mapped[, c("CI_PROT_norm_FC_on_control_BAS",
+           "DEX_PROT_norm_FC_on_control_BAS",
+           "TNF_PROT_norm_FC_on_control_BAS",
+           "MPQ_PROT_norm_FC_on_control_BAS",
+           "AA_PROT_norm_FC_on_control_BAS")] <- 
+  model_vs_ctrl_logFC_maker(data = phos_3t3_filt_norm_imp_below_ds1_looserstats_stats_cols_regdef_mapped,
+                            models = c("CI_BAS_PROT_norm",
+                                           "DEX_BAS_PROT_norm",
+                                           "TNF_BAS_PROT_norm",
+                                           "MPQ_BAS_PROT_norm",
+                                           "AA_BAS_PROT_norm"),
+                            control = "CTRL_BAS_PROT_norm")
+phos_3t3_filt_norm_imp_below_ds1_looserstats_stats_cols_regdef_mapped[, c("CI_PROT_norm_FC_on_control_INS",
+           "DEX_PROT_norm_FC_on_control_INS",
+           "TNF_PROT_norm_FC_on_control_INS",
+           "MPQ_PROT_norm_FC_on_control_INS",
+           "AA_PROT_norm_FC_on_control_INS")] <- 
+  model_vs_ctrl_logFC_maker(data = phos_3t3_filt_norm_imp_below_ds1_looserstats_stats_cols_regdef_mapped,
+                            models = c("CI_INS_PROT_norm",
+                                           "DEX_INS_PROT_norm",
+                                           "TNF_INS_PROT_norm",
+                                           "MPQ_INS_PROT_norm",
+                                           "AA_INS_PROT_norm"),
+                            control = "CTRL_INS_PROT_norm")
+
+###Medians and means
+
+##Make conditions
+conditions <- c("CTRL_BAS_PROT_norm",
+                "CI_BAS_PROT_norm",
+                                           "DEX_BAS_PROT_norm",
+                                           "TNF_BAS_PROT_norm",
+                                           "MPQ_BAS_PROT_norm",
+                                           "AA_BAS_PROT_norm",
+                "CTRL_INS_PROT_norm",
+                "CI_INS_PROT_norm",
+                                           "DEX_INS_PROT_norm",
+                                           "TNF_INS_PROT_norm",
+                                           "MPQ_INS_PROT_norm",
+                                           "AA_INS_PROT_norm")
+
+##Assign medians and mean by looping over conditions
+for (i in 1:length(conditions)){
+  
+  phos_3t3_filt_norm_imp_below_ds1_looserstats_stats_cols_regdef_mapped[, paste(c(conditions[i],
+                                              "_mean"),
+                                            collapse = "")] <- 
+    apply(phos_3t3_filt_norm_imp_below_ds1_looserstats_stats_cols_regdef_mapped[, grep(paste(c(conditions[i],
+                                                           "_\\d+"),
+                                                         collapse = ""),
+                                                   colnames(phos_3t3_filt_norm_imp_below_ds1_looserstats_stats_cols_regdef_mapped))],
+          1,
+          FUN = "mean",
+          na.rm = TRUE)
+  phos_3t3_filt_norm_imp_below_ds1_looserstats_stats_cols_regdef_mapped[, paste(c(conditions[i],
+                                              "_median"),
+                                            collapse = "")] <- 
+    apply(phos_3t3_filt_norm_imp_below_ds1_looserstats_stats_cols_regdef_mapped[, grep(paste(c(conditions[i],
+                                                           "_\\d+"),
+                                                         collapse = ""),
+                                                   colnames(phos_3t3_filt_norm_imp_below_ds1_looserstats_stats_cols_regdef_mapped))],
+          1,
+          FUN = "median",
+          na.rm = TRUE)
+}
+
+save(phos_3t3_filt_norm_imp_below_ds1_looserstats_stats_cols_regdef_mapped,
+     file = "output/data/phos_3t3_filt_norm_imp_below_ds1_looserstats_stats_cols_regdef_mapped__3_02.RData")
+```
+
+
+
+###Export
+```{r}
+save(phos_3t3_filt_norm_imp_below_ds1_looserstats_stats_cols_regdef_mapped,
+     file = "output/data/phos_3t3_filt_norm_imp_below_ds1_looserstats_stats_cols_regdef_mapped__1.RData")
+
+#Make phos_3t3_proc
+phos_3t3_proc <- phos_3t3_filt_norm_imp_below_ds1_looserstats_stats_cols_regdef_mapped
+save(phos_3t3_proc,
+     file = "output/data/phos_3t3_proc__4.RData")
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

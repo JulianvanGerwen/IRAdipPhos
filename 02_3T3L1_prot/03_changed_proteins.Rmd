@@ -1,0 +1,302 @@
+---
+title: "03_changed_proteins"
+output: html_document
+---
+
+###Background
+Here I perform basic inspection of proteins that are up- or down-regulated in insulin resistance models compared to CTRL
+
+###Initialise
+```{r}
+#Packages
+library(ggplot2)
+library(reshape2)
+
+#Scripts
+home_directory <- "..\\..\\..\\..\\..\\"
+source("..\\scripts/essential_visualisations_JvG.R")
+source("scripts/01_objects.R")
+source("scripts/02_functions.R")
+
+##Load in data
+#Proteome
+load("data/intermediate/proteome_post_analysis_3t3.RData")
+```
+
+###Summarising changes
+
+3T3-L1
+```{r}
+###Num up and down, for each number of sig models
+
+##Make summary df
+up_down_summary_df <- matrix(0,
+                            nrow = 5,
+                             ncol = 3)
+colnames(up_down_summary_df) <- c("num_sig_models",
+                                  "up",
+                                  "down")
+up_down_summary_df <- as.data.frame(up_down_summary_df)
+up_down_summary_df$num_sig_models <- 1:5
+up_down_summary_df$up <- sapply(up_down_summary_df$num_sig_models,
+                                function(n) length(which(proteome_post_analysis_3t3$numisupmodels == n)))
+up_down_summary_df$down <- sapply(up_down_summary_df$num_sig_models,
+                                function(n) length(which(proteome_post_analysis_3t3$numisdownmodels == n)))
+
+##Plot
+up_down_summary_df_melted <- melt(up_down_summary_df,
+                                  id.vars = "num_sig_models")
+
+ggplot(up_down_summary_df_melted,
+       aes(x = num_sig_models,
+           y = value,
+           fill = variable)) + 
+  geom_col(position = "stack",
+           width = 0.8) +
+  scale_fill_manual(name = "Regulation relative to control",
+                      labels = c("Upregulated",
+                                 "Downregulated"),
+                      values = c("#d6604d",
+                                 "#4393c3")) +
+  theme(panel.grid = element_blank(),
+        panel.background = element_blank(),
+        axis.line = element_line(color = "black"),
+        plot.title = element_text(hjust = 0.5),
+        axis.text = element_text(colour = "black")) +
+  labs(x = "Number of changed models",
+       y = "Number of proteins") +
+  ggtitle("Up and Down Proteins") 
+  ggsave("output/images/analysis/up_and_down/barplot_num_sig_up_and_down.pdf",
+         width = 5,
+         height = 4)
+#Export
+write.csv(up_down_summary_df, file = "output/data/up_down_summary_df.csv")
+
+
+###Num up or down in each treatment
+#Try to incorporate up/down into this. My guess is it won't be interesting
+
+##Function that gives number of up/down proteins in each condition, for a given number of significant of models
+treatment_up_down_summariser <- function(data,
+                                         up_down,
+                                         num_sig_models){
+  
+  up_down_label <- paste(c("_is",
+                           up_down),
+                         collapse = "")
+  numis_up_down_label <- paste(c("numis",
+                         up_down,
+                         "models"),
+                       collapse = "")
+  
+  return(colSums(data[which(data[, numis_up_down_label] == 
+                              num_sig_models), grep(up_down_label,
+                                                                                      colnames(data))]))
+}
+
+##Make summary
+up_down_treatments_summary_df <- matrix(0,
+                                        ncol = 16,
+                                        nrow = 5)
+colnames(up_down_treatments_summary_df) <- c("num_sig_models",
+                                             "CI_isup", 
+                                             "DEX_isup", 
+                                             "TNF_isup", 
+                                             "MPQ_isup",  
+                                             "AA_isup",
+                                             "CI_isdown", 
+                                             "DEX_isdown", 
+                                             "TNF_isdown", 
+                                             "MPQ_isdown",  
+                                             "AA_isdown",
+                                             "CI_isall", 
+                                             "DEX_isall", 
+                                             "TNF_isall", 
+                                             "MPQ_isall",  
+                                             "AA_isall")
+up_down_treatments_summary_df[, 1] <- 1:5
+for (i in 1:5){
+  
+  up_down_treatments_summary_df[i, 2:6] <- treatment_up_down_summariser(proteome_post_analysis_3t3,
+                             "up",
+                             i)
+  up_down_treatments_summary_df[i, 7:11] <- treatment_up_down_summariser(proteome_post_analysis_3t3,
+                             "down",
+                             i)
+}
+
+up_down_treatments_summary_df[, 12:16] <- up_down_treatments_summary_df[, 2:6] + up_down_treatments_summary_df[, 7:11]
+
+#Export
+write.csv(up_down_treatments_summary_df,
+          file = "output/data/up_down_treatments_summary_df.csv")
+
+##Plot
+up_down_treatments_summary_df_melt <- melt(as.data.frame(up_down_treatments_summary_df),
+                                           id.vars = "num_sig_models")
+colnames(up_down_treatments_summary_df_melt) <- c("num_sig_models",
+                                                  "condition_up_down",
+                                                  "value")
+up_down_treatments_summary_df_melt$condition <- sapply(as.character(up_down_treatments_summary_df_melt$condition_up_down),
+                                                                    function(x) strsplit(x, "_")[[1]][1])
+up_down_treatments_summary_df_melt$condition <- factor(up_down_treatments_summary_df_melt$condition,
+                                                       levels = c("CI",
+                                                                  "DEX",
+                                                                  "TNF",
+                                                                  "MPQ",
+                                                                  "AA"))
+#Factor for num sig models
+up_down_treatments_summary_df_melt$num_sig_models_factor <- factor(up_down_treatments_summary_df_melt$num_sig_models)
+
+
+##Lump up and down together
+
+#x-axis number of changed models
+ggplot(up_down_treatments_summary_df_melt[grep("all",
+                                               up_down_treatments_summary_df_melt$condition_up_down), ],
+       aes(x = num_sig_models,
+           y = value,
+           fill = condition)) +
+  scale_fill_manual(values = SH_model_main_colours,
+                    name = "Model",
+                    labels = c("CI",
+                               "DEX",
+                               "TNF",
+                               "MPQ",
+                               "AA")) +
+  geom_col(position = "stack",
+           width = 0.8) + 
+  labs(x = "Number of changed models",
+       y = "Number of proteins") +
+  theme(panel.grid = element_blank(),
+        panel.background = element_blank(),
+                axis.line = element_line(color = "black"),
+        plot.title = element_text(hjust = 0.5),
+        axis.text = element_text(colour = "black")) +
+  ggtitle("Up and Down Proteins") 
+  ggsave("output/images/analysis/up_and_down/barplot_num_sig_up_and_down_conditions.pdf",
+         width = 4,
+         height = 4)
+
+#x-axis model
+#x-axis model, alpha number of defective models
+ggplot(up_down_treatments_summary_df_melt[grep("all",
+                                               up_down_treatments_summary_df_melt$condition_up_down), ],
+       aes(x = condition,
+           y = value,
+           fill = condition,
+           alpha = num_sig_models_factor)) +
+  geom_col(position = "stack",
+           width = 0.8) +
+  scale_fill_manual(values = SH_model_main_colours,
+                    name = "Model",
+                    labels = c("CI",
+                               "DEX",
+                               "TNF",
+                               "MPQ",
+                               "AA")) +
+  scale_alpha_manual(values = rev(seq(from = 0.2,
+                                  to = 1,
+                                  by = (1 - 0.2)/4)),
+                     name = "# changed models")  +
+  labs(x = "Model",
+       y = "Number of proteins") +
+  theme(panel.grid = element_blank(),
+        panel.background = element_blank(),
+                axis.line = element_line(color = "black"),
+        axis.text.x = element_text(angle = 90,
+                                   hjust = 1,
+                                   vjust = 0.5,
+                                   colour = "black"),
+        axis.text.y = element_text(colour = "black")) +
+  ggtitle("Up and Down Proteins") 
+  ggsave("output/images/analysis/up_and_down/barplot_num_sig_up_and_down_conditions_xaxismodel.pdf",
+         width = 4,
+         height = 4)
+
+
+###Number changed in each model using just MODEL_isup (we will get extra, as this includes proteins that are up in model but down in another)
+length(which(proteome_post_analysis_3t3$CI_isup == TRUE |
+               proteome_post_analysis_3t3$CI_isdown == TRUE))
+length(which(proteome_post_analysis_3t3$DEX_isup == TRUE |
+               proteome_post_analysis_3t3$DEX_isdown == TRUE))
+length(which(proteome_post_analysis_3t3$TNF_isup == TRUE |
+               proteome_post_analysis_3t3$TNF_isdown == TRUE))
+length(which(proteome_post_analysis_3t3$MPQ_isup == TRUE |
+               proteome_post_analysis_3t3$MPQ_isdown == TRUE))
+length(which(proteome_post_analysis_3t3$AA_isup == TRUE |
+               proteome_post_analysis_3t3$AA_isdown == TRUE))
+``` 
+
+
+###Visualisations
+
+Volcano plots
+```{r}
+###Make volcano plots of each model
+#Remove nlog_adj_pval == Inf
+#Make same size
+
+##Get max nlogpval and FC for frame
+max_nlogpval <- max(-log10(proteome_post_analysis_3t3$TNF_GROUPED_adj_pval[which(proteome_post_analysis_3t3$TNF_GROUPED_adj_pval != 0)]),
+                na.rm = TRUE)
+max_FC <- max(abs(proteome_post_analysis_3t3$DEX_GROUPED_FC[which(proteome_post_analysis_3t3$DEX_GROUPED_adj_pval > 0 &
+                                                                    proteome_post_analysis_3t3$DEX_GROUPED_adj_pval < 0.05)]),
+              na.rm = TRUE)
+
+##Plot
+models <- c("CI",
+            "DEX",
+            "TNF",
+            "MPQ",
+            "AA")
+for (i in 1:length(models)){
+  
+  plot(volcano_plot_coloured(data = proteome_post_analysis_3t3,
+                             pval_col = paste(c(models[i],
+                                                "_GROUPED_adj_pval"),
+                                              collapse = ""),
+                             FC_col = paste(c(models[i],
+                                                "_GROUPED_FC"),
+                                              collapse = ""),
+                             sig_colour = SH_model_main_colours[i],
+                             x_lim = max_FC,
+                             y_lim = max_nlogpval,
+                             size = 1.5,
+                             label_col = "gene",
+                             label_rownames = c("Slc2a4_P14142",
+                                                "Akt2_Q60823"))) +
+    ggtitle(paste(c(models[i],
+                    " Proteome"),
+                  collapse = "")) 
+    ggsave(paste(c("output/images/analysis/up_and_down/volcano_plots/",
+                   models[i],
+                   "_proteome_volcano.pdf"),
+                 collapse = ""),
+           width = 3,
+           height = 3)
+}
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

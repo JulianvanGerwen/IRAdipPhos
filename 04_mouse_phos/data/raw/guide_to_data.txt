@@ -1,0 +1,3 @@
+m_p_trueraw_map_uniprot is what I use to map old uniprots to phosmatched uniprots (Elise's code that maps uniprots to psp)
+
+m_p_trueraw_py is the raw DDA 3T3L1 and mouse phospho
