@@ -1,0 +1,66 @@
+"","cluster","cluster_size","genes","KEGG_term_ID","KEGG_term_description","KEGG_observed_gene_count","KEGG_background_gene_count","KEGG_strength","KEGG_FDR","RCTM_term_ID","RCTM_term_description","RCTM_observed_gene_count","RCTM_background_gene_count","RCTM_strength","RCTM_FDR"
+"Red","Red",22,"Cpsf4;Cwc27;Gtf2a1;Hnrnpa1;Leo1;Ncoa6;Nelfa;Phax;Polr2j;Rbfox2;Rbm5;Rprd1b;Rprd2;Rtf1;Slu7;Smndc1;Srsf5;Sugp1;Supt4a;Syf2;Taf9b;Zc3h18","mmu03040;mmu03022","Spliceosome;Basal transcription factors","5;2","130; 43","1.59;1.67","2.5e-06;5.9e-03","MMU-73857;MMU-72203;MMU-674695;MMU-72163;MMU-8953854;MMU-6807505;MMU-112382;MMU-72187;MMU-109688;MMU-73856;MMU-113418;MMU-6796648;MMU-8866654;MMU-73776;MMU-73779;MMU-75953;MMU-3700989;MMU-159236","RNA Polymerase II Transcription;Processing of Capped Intron-Containing Pre-mRNA;RNA Polymerase II Pre-transcription Events;mRNA Splicing - Major Pathway;Metabolism of RNA;RNA polymerase II transcribes snRNA genes;Formation of RNA Pol II elongation complex;mRNA 3'-end processing;Cleavage of Growing Transcript in the Termination Region;RNA Polymerase II Transcription Termination;Formation of the Early Elongation Complex;TP53 Regulates Transcription of DNA Repair Genes;E3 ubiquitin ligases ubiquitinate target proteins;RNA Polymerase II Promoter Escape;RNA Polymerase II Transcription Pre-Initiation And Promoter Opening;RNA Polymerase II Transcription Initiation;Transcriptional Regulation by TP53;Transport of Mature mRNA derived from an Intron-Containing Transcript","12; 8; 6; 7; 9; 5; 4; 3; 3; 3; 2; 2; 2; 2; 2; 2; 3; 2","759;212; 72;156;448; 67; 51; 50; 57; 57; 29; 38; 39; 43; 43; 43;250; 68","1.20;1.58;1.92;1.65;1.30;1.87;1.90;1.78;1.72;1.72;1.84;1.72;1.71;1.67;1.67;1.67;1.08;1.47","6.55e-11;3.73e-10;1.31e-09;1.51e-09;1.69e-09;4.65e-08;1.25e-06;8.15e-05;1.10e-04;1.10e-04;1.40e-03;2.20e-03;2.20e-03;2.50e-03;2.50e-03;2.50e-03;4.10e-03;4.40e-03"
+"Salmon 2","Salmon 2",11,"Aftph;Bin1;Bin3;Bloc1s1;Cttn;Dab2;Fnbp1l;Ldlr;Trip10;Ubqln2;Vamp2","mmu04144","Endocytosis","3","258","1.37","0.0048","MMU-8856828;MMU-199991;MMU-8856825;MMU-432720;MMU-432722;MMU-421837","Clathrin-mediated endocytosis;Membrane Trafficking;Cargo recognition for clathrin-mediated endocytosis;Lysosome Vesicle Biogenesis;Golgi Associated Vesicle Biogenesis;Clathrin derived vesicle budding","5;6;3;2;2;2","117;523; 85; 28; 44; 59","1.93;1.36;1.85;2.16;1.96;1.83","5.57e-08;1.00e-06;6.43e-05;5.10e-04;1.00e-03;1.50e-03"
+"Fire Brick","Fire Brick",11,"Aatf;Dnttip2;Exosc3;Exosc4;Exosc8;Ltv1;Maged1;Mphosph10;Rrp7a;Utp14a;Zcchc8","mmu03008;mmu03018","Ribosome biogenesis in eukaryotes;RNA degradation","3;3","76;80","1.90;1.88","2.14e-05;2.14e-05","MMU-6791226;MMU-450604;MMU-429958;MMU-450385","Major pathway of rRNA processing in the nucleolus and cytosol;KSRP (KHSRP) binds and destabilizes mRNA;mRNA decay by 3' to 5' exoribonuclease;Butyrate Response Factor 1 (BRF1) binds and destabilizes mRNA","7;3;3;3","102; 13; 15; 15","2.14;2.67;2.60;2.60","1.73e-13;9.27e-08;1.12e-07;1.12e-07"
+"Salmon","Salmon",7,"Ccdc55;Esf1;Ftsj3;Grwd1;Kri1;Nol8;Nolc1",NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+"Fire Brick 2","Fire Brick 2",7,"Cks1brt;Gli3;Limd1;Psmd10;Rnf146;Sufu;Tnfrsf12a",NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+"Brown","Brown",6,"Bgn;Dcn;Gpc1;Sdc1;Sdc4;Ybx3",NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+"Sienna","Sienna",5,"Banf1;Bclaf1;Emd;Lemd3;Tmpo",NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+"Sandy Brown","Sandy Brown",5,"Myl1;Tmod3;Tpm1;Tpm2;Tpm4",NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+"Dark Golden Rod","Dark Golden Rod",5,"Cebpb;Creb1;Crtc1;Crtc2;Notch2",NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+"Sandy Brown 2","Sandy Brown 2",4,"Dbnl;Dlgap4;Lrg1;Tpm3",NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+"Light Green 4","Light Green 4",4,"Bsg;Itga5;Itgb1;Lama5",NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+"Light Green 6","Light Green 6",4,"Grn;Prdx6;Serpina3g;Serpina3n",NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+"Light Green 3","Light Green 3",4,"Kpna2;Nup35;Nup50;l7Rn6",NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+"Light Green","Light Green",4,"Endog;Fen1;Nasp;Polb",NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+"Green","Green",4,"Lsm7;Mfap1a;Nhp2l1;Nop16",NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+"Light Green 2","Light Green 2",4,"Cetn2;Fgfr1op;Haus7;Pcm1",NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+"Light Green 5","Light Green 5",4,"Hmgn1;Nfyb;Pole3;Pole4",NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+"Medium Aqua Marine","Medium Aqua Marine",4,"Baiap2;Enah;Eps8;Wipf2",NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+"Aquamarine 6","Aquamarine 6",3,"Bid;Mcl1;Tpt1",NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+"Aquamarine 4","Aquamarine 4",3,"Cd14;Cd44;Mmp14",NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+"Aquamarine 2","Aquamarine 2",3,"App;Cdh2;Gng12",NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+"Cyan","Cyan",3,"Pqbp1;Rbms1;Ubl4",NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+"Aquamarine","Aquamarine",3,"Dnaja3;Grpel2;Pam16",NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+"Aquamarine 3","Aquamarine 3",3,"Nap1l1;Ncl;Npm1",NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+"Aquamarine 5","Aquamarine 5",3,"Bola2;Bola3;Ciapin1",NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+"Sky Blue 6","Sky Blue 6",3,"Phc2;Ubap2l;Yy1",NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+"Sky Blue 4","Sky Blue 4",3,"Clip1;Nudc;Zwint",NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+"Sky Blue","Sky Blue",3,"Pdrg1;Pfdn6;Uri1",NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+"Blue","Blue",3,"Chmp5;Chmp6;Vps37c",NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+"Sky Blue 2","Sky Blue 2",3,"Rnf25;Ube2g2;Ube2l6",NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+"Sky Blue 3","Sky Blue 3",3,"Ifi204;Lrrfip1;Zbp1",NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+"Sky Blue 5","Sky Blue 5",3,"Mrpl46;Mrps36;Ubap2",NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+"Cornflower Blue 5","Cornflower Blue 5",3,"Ubxn7;Yap1;Zyx",NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+"Cornflower Blue 3","Cornflower Blue 3",2,"Srxn1;Tubb6",NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+"Cornflower Blue","Cornflower Blue",2,"Col2a1;Col5a3",NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+"Cornflower Blue 2","Cornflower Blue 2",2,"Ndrg1;Ndrg2",NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+"Cornflower Blue 4","Cornflower Blue 4",2,"Mthfd2;Mthfsd",NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+"Medium Slate Blue 4","Medium Slate Blue 4",2,"Ak4;Ampd3",NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+"Medium Slate Blue 2","Medium Slate Blue 2",2,"Wtap;Ythdf2",NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+"Medium Slate Blue","Medium Slate Blue",2,"Ubqln1;Ubqln4",NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+"Medium Slate Blue 3","Medium Slate Blue 3",2,"Ndufa2;Ndufv3",NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+"Medium Purple","Medium Purple",2,"Polr1d;Trmt112",NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+"Medium Purple 2","Medium Purple 2",2,"ENSMUSG00000019797;ENSMUSG00000039195",NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+"Medium Purple 3","Medium Purple 3",2,"Eif6;Rpl22l1",NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+"Medium Purple 4","Medium Purple 4",2,"AK157302;Isca2",NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+"Medium Purple 5","Medium Purple 5",2,"Foxo1;Setd7",NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+"Orchid 7","Orchid 7",2,"Ppp4r2;Tox4",NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+"Orchid 6","Orchid 6",2,"Sdhaf1;Sdhaf2",NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+"Orchid 4","Orchid 4",2,"Eif1a;Eif4b",NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+"Orchid 2","Orchid 2",2,"Nras;Rap2b",NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+"Violet 2","Violet 2",2,"Camkk2;Prkab2",NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+"Purple","Purple",2,"Mt1;Mt2",NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+"Violet","Violet",2,"Eno3;Fkbp1a",NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+"Violet 3","Violet 3",2,"Eif4enif1;Lsm14b",NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+"Orchid","Orchid",2,"Hsf1;Rps19bp1",NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+"Orchid 3","Orchid 3",2,"Bcl9l;Pygo2",NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+"Orchid 5","Orchid 5",2,"Mdc1;Ube2n",NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+"Hot Pink","Hot Pink",2,"Ecm1;Fam3c",NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+"Pink","Pink",2,"Il6st;Lifr",NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+"Hot Pink 2","Hot Pink 2",1,"Vegfa",NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+"Pale Violet Red 3","Pale Violet Red 3",1,"Vcan",NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+"Pale Violet Red 2","Pale Violet Red 2",1,"Psap",NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+"Pale Violet Red","Pale Violet Red",1,"Zpr1",NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+"Light Coral 2","Light Coral 2",1,"Bud13",NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+"Light Coral","Light Coral",1,"Snap29",NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA

@@ -1,0 +1,2 @@
+#term ID	term description	observed gene count	background gene count	strength	false discovery rate	matching proteins in your network (IDs)	matching proteins in your network (labels)
+MMU-168249	Innate Immune System	4	246	1.38	5.97e-05	10090.ENSMUSP00000027684,10090.ENSMUSP00000029257,10090.ENSMUSP00000030538,10090.ENSMUSP00000035170	Arl8a,Atp11b,Ddost,Dnajc13

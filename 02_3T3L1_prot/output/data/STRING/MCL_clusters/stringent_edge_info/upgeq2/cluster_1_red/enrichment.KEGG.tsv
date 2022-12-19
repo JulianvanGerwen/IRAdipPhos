@@ -1,0 +1,4 @@
+#term ID	term description	observed gene count	background gene count	strength	false discovery rate	matching proteins in your network (IDs)	matching proteins in your network (labels)
+mmu03040	Spliceosome	6	130	1.58	1.69e-07	10090.ENSMUSP00000020681,10090.ENSMUSP00000025997,10090.ENSMUSP00000030622,10090.ENSMUSP00000042658,10090.ENSMUSP00000105985,10090.ENSMUSP00000111319	Slu7,Smndc1,Syf2,Hnrnpa1,Srsf5,Pqbp1
+mmu03022	Basal transcription factors	2	43	1.58	0.0090	10090.ENSMUSP00000021345,10090.ENSMUSP00000109123	Gtf2a1,Taf9b
+mmu05168	Herpes simplex infection	3	202	1.08	0.0090	10090.ENSMUSP00000061012,10090.ENSMUSP00000105985,10090.ENSMUSP00000109123	Hmgn1,Srsf5,Taf9b

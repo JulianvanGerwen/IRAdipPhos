@@ -1,0 +1,611 @@
+---
+title: "01_processing_and_QC"
+output: html_document
+---
+
+###Background
+Here I process the proteome data and perform QC
+
+###Initialise
+```{r}
+#Packages
+library(corrplot)
+library(multcomp)
+library(ggplot2)
+library(reshape2)
+library(dendextend)
+
+#Scripts
+source("..\\scripts/essential_visualisations_JvG.R")
+source("scripts/01_objects.R")
+source("scripts/02_functions.R")
+```
+
+###Load and process data
+```{r}
+###Read in
+raw_data <- read.csv("data/raw/ir_proteome_raw_SH.csv",
+                     stringsAsFactors = FALSE)
+
+###Process
+#Uniprot and gene names
+raw_data$uniprot <- sapply(raw_data$Majority.protein.IDs,
+                           function(x) strsplit(x,
+                                                ";")[[1]][1])
+raw_data$gene <- sapply(raw_data$Gene.names,
+                           function(x) strsplit(x,
+                                                ";")[[1]][1])
+raw_data$gene_uniprot <- apply(raw_data[, c("gene",
+                                            "uniprot")],
+                               1,
+                               function(x) paste(x,
+                                                 collapse = "_"))
+rownames(raw_data) <- raw_data$gene_uniprot
+
+#Change column names
+colnames(raw_data)[1:48] <- sapply(colnames(raw_data)[1:48],
+                                   function(x){
+                                     x <- sub("BAS",
+                                              "BASAL",
+                                              x)
+                                     x <- sub("CTRL",
+                                              "NORMAL",
+                                              x)
+                                     x <- sub("MITOPQ",
+                                              "MPQ",
+                                              x)
+                                     return(x)
+                                   })
+colnames(raw_data)[grep("NORMAL_BASAL",
+                        colnames(raw_data))] <- c("NORMAL_BASAL_1",
+                                                  "NORMAL_BASAL_2",
+                                                  "NORMAL_BASAL_3",
+                                                  "NORMAL_BASAL_4",
+                                                  "NORMAL_BASAL_5")
+colnames(raw_data)[grep("CI_BASAL",
+                        colnames(raw_data))] <- c("CI_BASAL_1",
+                                                  "CI_BASAL_2",
+                                                  "CI_BASAL_3")
+colnames(raw_data)[grep("TNF_BASAL",
+                        colnames(raw_data))] <- c("TNF_BASAL_1",
+                                                  "TNF_BASAL_2",
+                                                  "TNF_BASAL_3")
+
+```
+
+NAs:
+```{r}
+###Rules:
+#Keep if quantified in >=8 ns
+
+##Hist before NA removal
+hist(rowSums(is.na(raw_data[, 1:48])),
+     breaks = 48,
+     main = "NAs before removal")
+
+##Filter
+#Quantified in at least 8
+raw_data_filt <- raw_data[which(rowSums(is.na(raw_data[, 1:48])) <= 40), ]
+#Removing proteins not quantified in control
+raw_data_filt <- raw_data_filt[which(rowSums(is.na(raw_data_filt[, 1:10])) < 10), ]
+
+
+##Hist after NA removal
+hist(rowSums(is.na(raw_data_filt[, 1:48])),
+     breaks = 40,
+     main = "NAs after removal")
+```
+
+Log transform and median normalise
+```{r}
+##Log transform
+raw_data_filt_log <- raw_data_filt
+raw_data_log <- raw_data
+
+##Median normalise
+median_normaliser <- function(data){
+  
+  medians <- apply(data,
+                   2,
+                   median,
+                   na.rm = TRUE)
+  overall_median <- median(medians)
+  median_differences <- medians - overall_median
+  
+  data <- sweep(data,
+                2,
+                median_differences,
+                FUN = "-")
+  
+  return(data)
+}
+
+##Boxplot before normalisation
+boxplot(raw_data_filt_log[, 1:48],
+        las = 2,
+        pch = 20,
+        cex = 0.5)
+
+raw_data_filt_log_norm <- raw_data_filt_log
+raw_data_filt_log_norm[, 1:48] <- median_normaliser(raw_data_filt_log[, 1:48])
+raw_data_log_norm <- raw_data_log
+raw_data_log_norm[, 1:48] <- median_normaliser(raw_data_log[, 1:48])
+
+
+boxplot(raw_data_filt_log_norm[, 1:48],
+        las = 2,
+        pch = 20,
+        cex = 0.5)
+```
+
+
+###QC
+Numbers quantified
+```{r}
+library(tidyverse)
+#Prepare
+sample_quant_df <- data.frame("name" = colnames(raw_data)[1:48],
+                              "quant" = colSums(!is.na(raw_data[, 1:48]))) %>%
+  mutate(model = sapply(.[, "name"], function(x) strsplit(x, "_")[[1]][1])) %>%
+  rbind(c("Total_INS", length(which(rowSums(!is.na(raw_data[, 1:48])) > 0)), "Total")) %>%
+  mutate(model = factor(model, levels = unique(model))) %>%
+  mutate(name = factor(name, levels = unique(name))) %>%
+  mutate(quant = as.numeric(quant))
+
+#plot
+ggplot() +
+  geom_col(data = sample_quant_df,
+           aes(x = name,
+               y = quant,
+               colour = model),
+           fill = "white",
+           size = 0.25,
+           width = 0.7) +
+  geom_col(data = sample_quant_df[grep("INS",
+                                              sample_quant_df$name), ],
+           aes(x = name,
+               y = quant,
+               fill = model),
+           alpha = 0.4) +
+  scale_colour_manual(values = c(SH_control_model_main_colours, "#bfbebe"),
+                      name = "Condition") +
+  scale_fill_manual(values = c(SH_control_model_main_colours, "#bfbebe"),
+                    name = "Condition") +
+  comfy_theme() +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5, size = 7, colour = "black")) +
+  expand_limits(y = 0) +
+  labs(x = "Sample",
+       y = "# phosphopeptides") +
+  ggtitle("3T3-L1 Proteome Missingness")
+ggsave("output/images/QC/bplot_3t3l1_prot_quant.pdf",
+       width = 4, height = 2)
+
+#Export
+write.csv(sample_quant_df,
+          file = "output/data/QC/sample_quant_df.csv")
+```
+
+```{r}
+###Clustering
+#Ins and bas do not separate well
+#MPQ, AA and NORMAL do not separate well
+#CI and NORMAL don't separate perfectly
+dist_m <- dist(t(raw_data_filt[, 1:48]))
+h_clust <- hclust(dist_m)
+h_dend <- as.dendrogram(h_clust)
+
+##Conclusions:
+#Nicer than mice
+h_dend_cols <- c(rep("#3F403F",
+                     10),
+                rep("#D73127",
+                    7),
+                rep("#F68C5B",
+                    8),
+                rep("#FED318",
+                    7),
+                rep("#93CA60",
+                    8),
+                rep("#1A984F",
+                    8))
+h_dend_cols <- h_dend_cols[order.dendrogram(h_dend)]
+labels_colors(h_dend) <- h_dend_cols
+labels_cex(h_dend) <- 0.6
+
+pdf("output/images/QC/3T3L1_prot__dendogram.pdf")
+plot(h_dend,
+     main = "3T3-L1 Proteome Dendogram")
+dev.off()
+
+
+###Corr heatmap
+#Mean 0.9588806
+
+pdf("output/images/QC/3T3L1_prot__corr_heatmap.pdf")
+corr_m <- cor(raw_data_filt_log[, 1:48],
+               use = "pairwise.complete.obs")
+mean(corr_m[corr_m!= 1])
+corrplot(corr_m,
+         method = "color",
+         type = "upper",
+         order = "hclust",
+         tl.cex = 0.5,
+         col = c(rep("black", 700),
+                 colorRampPalette(c("white", "blue"))(100)),
+         title = "3T3-L1 Proteome Corr Heatmap")
+dev.off()
+#Export
+write.csv(corr_m, file = "output/data/QC/corr_m.csv")
+
+
+###PCA
+pca <- prcomp(t(na.omit(raw_data_filt_log[, 1:48])),
+              center = TRUE,
+              scale. = FALSE)
+summary(pca)
+pca_df <- as.data.frame(pca$x[, 1:2],
+                        stringsAsFactors = FALSE)
+pca_df$Treatment <- sub("_\\d+",
+                                           "",
+                                           rownames(pca_df))
+pca_df$Model <- factor(sapply(pca_df$Treatment,
+                       function(x) strsplit(x, "_")[[1]][1]),
+                       levels = c("NORMAL",
+                                  "CI",
+                                  "DEX",
+                                  "TNF",
+                                  "MPQ",
+                                  "AA"))
+pca_plot <- ggplot() + 
+  geom_point(data = pca_df,
+             aes(x = PC1,
+                 y = PC2,
+                 color = Model),
+             size = 3,
+             shape = 21,
+             stroke = 1,
+             alpha = 1) +
+  geom_point(data = pca_df[grep("INS",
+                                pca_df$Treatment), ],
+             aes(x = PC1,
+                 y = PC2,
+                 color = Model),
+             size = 3,
+             alpha = 0.4) +
+  scale_colour_manual(values = SH_control_model_main_colours)  +
+    labs(x = "PC1 (28.07%)",
+         y = "PC2 (18.93%)")+
+  theme(panel.background = element_blank(),
+        panel.grid = element_blank(),
+        axis.line = element_line(colour = "black"),
+        plot.title = element_text(hjust = 0.5))
+plot(pca_plot) +
+  ggtitle("3T3-L1 Proteome PCA") 
+  ggsave("output/images/QC/3T3L1_prot__PCA.pdf",
+         width = 5,
+         height = 5)
+  
+#Export
+write.csv(pca_df, file = "output/data/QC/pca_df.csv")
+
+
+###Missing values
+
+##After removing NA
+ratio_missing_after <- NULL
+for (i in 1:ncol(raw_data_filt[, 1:48])){
+  n_missing <- sum(is.na(raw_data_filt[, 1:48][, i]))
+  n_total <- length(raw_data_filt[, 1:48][, i])
+  ratio_missing_after[i] <- n_missing / n_total
+}
+names(ratio_missing_after) <- colnames(raw_data_filt[, 1:48])
+ratio_missing_after_df <- data.frame("name" = names(ratio_missing_after),
+                                     "ratio" = ratio_missing_after,
+                                     stringsAsFactors = FALSE)
+ratio_missing_after_df <- ratio_missing_after_df[c(grep("NORMAL",
+                                                        rownames(ratio_missing_after_df)),
+                                                   grep("CI",
+                                                        rownames(ratio_missing_after_df)),
+                                                   grep("DEX",
+                                                        rownames(ratio_missing_after_df)),
+                                                   grep("TNF",
+                                                        rownames(ratio_missing_after_df)),
+                                                   grep("MPQ",
+                                                        rownames(ratio_missing_after_df)),
+                                                   grep("AA",
+                                                        rownames(ratio_missing_after_df))), ]
+ratio_missing_after_df$model <- factor(sapply(ratio_missing_after_df$name,
+                                              function(x) strsplit(x, "_")[[1]][1]),
+                                       levels = c("NORMAL",
+                                                  "CI",
+                                                  "DEX",
+                                                  "TNF",
+                                                  "MPQ",
+                                                  "AA"))
+
+ratio_missing_after_df$name <- factor(ratio_missing_after_df$name,
+                                      levels = ratio_missing_after_df$name)
+
+###GGPLOT
+ggplot() +
+  geom_col(data = ratio_missing_after_df,
+           aes(x = name,
+               y = ratio,
+               colour = model),
+           fill = "white",
+           size = 1,
+           width = 0.7) +
+  geom_col(data = ratio_missing_after_df[grep("INS",
+                                              rownames(ratio_missing_after_df)), ],
+           aes(x = name,
+               y = ratio,
+               fill = model),
+           alpha = 0.4) +
+  scale_colour_manual(values = SH_control_model_main_colours,
+                      name = "Condition") +
+  scale_fill_manual(values = SH_control_model_main_colours,
+                    name = "Condition") +
+  theme(panel.background = element_blank(),
+        panel.grid = element_blank(),
+        axis.line = element_line(colour = "black"),
+        axis.text.x = element_text(angle = 90,
+                                   hjust = 1,
+                                   vjust = 0.5,
+                                   size = 7),
+        plot.title = element_text(hjust = 0.5)) +
+  labs(x = "Sample",
+       y = "NA Ratio") +
+  ggtitle("3T3-L1 Proteome Missingness") 
+  ggsave("output/images/QC/3T3L1_prot__NAs_barplot.pdf")
+```
+
+###Match uniprots and gene names to phospho
+
+```{r}
+###Make processed data
+data_proc <- raw_data_filt_log[, c(1:48, 97, 98)]
+
+####Load in phospho
+load("data/intermediate/post_analysis_3t3_with_mouse.RData")
+
+####Matching UNIPROT and GENE
+
+
+###Function that identifies best uniprots for proteome data, by using phospho data
+#possible_uniprots_col contains uniprots separated by ";"; typically Majority.protein.IDs column from MaxQuant
+uniprot_proteome_from_phos_matcher <- function(old_uniprots,
+                                               possible_uniprots_col,
+                                               destination_uniprots){
+    
+    ##Set up new uniprots
+    new_uniprots <- old_uniprots
+    
+    ##Make list of possible uniprots
+    possible_uniprots_list <- strsplit(possible_uniprots_col,
+                                       ";")
+    names(possible_uniprots_list) <- old_uniprots
+    
+    ##Make list of indices for matched uniprots
+    ######Ultimately get rid of this
+    matched_uniprots_indices <- as.list(names(possible_uniprots_list))
+    names(matched_uniprots_indices) <- names(possible_uniprots_list)
+    matched_uniprots_indices_report <- NULL
+    
+    #Fill up
+    for (i in 1:length(possible_uniprots_list)){
+      
+      #Get matched indices
+      temp_matched_indices <- which(possible_uniprots_list[[i]] %in%
+                                               destination_uniprots)
+      
+      #Fill up matched_uniprots_indices
+      matched_uniprots_indices[[i]] <- temp_matched_indices
+      matched_uniprots_indices_report[i] <- length(matched_uniprots_indices[[i]])
+      
+      #Assign new uniprot
+        #One match:
+      if (length(temp_matched_indices) == 1){
+        
+        new_uniprots[i] <- possible_uniprots_list[[i]][temp_matched_indices]
+        
+       #More than one match
+      } else if (length(temp_matched_indices > 1)){
+    
+        
+        #Find how many destination uniprots correspond to each match. Match with greatest number wins. Take first one if tie
+        destination_uniprot_hits <- NULL
+        for (j in 1:length(temp_matched_indices)){
+          
+          destination_uniprot_hits[j] <- length(which(destination_uniprots ==
+                                                        possible_uniprots_list[[i]][temp_matched_indices[j]]))
+        }
+        winning_index <- temp_matched_indices[which(destination_uniprot_hits == 
+                                                      max(destination_uniprot_hits))[1]]
+        new_uniprots[i] <-  possible_uniprots_list[[i]][winning_index]
+      }
+    }
+    
+    ##Return
+    return(new_uniprots)
+}
+
+
+
+###Old rownames
+raw_data_log_norm$old_rownames <- rownames(raw_data_log_norm)
+
+
+###Make uniprots
+
+#Use Majority.protein.IDs. Difference compared to Protein.IDs. is very little, and with Majority.protein.IDs we get more with only 1 match
+raw_data_log_norm$new_uniprot <- uniprot_proteome_from_phos_matcher(old_uniprots = raw_data_log_norm$uniprot,
+                                                            possible_uniprots_col = raw_data_log_norm$Majority.protein.IDs,
+                                                            destination_uniprots = post_analysis_3t3_with_mouse$uniprot)
+
+###Make gene names
+#Take gene name associated with phospho, by matching uniprots
+raw_data_log_norm$new_gene <- raw_data_log_norm$gene
+matches_num_vector <- NULL
+for (i in 1:nrow(raw_data_log_norm)){
+  
+  temp_uniprot <- raw_data_log_norm[i, "new_uniprot"]
+  if (temp_uniprot %in%
+      post_analysis_3t3_with_mouse$uniprot){
+    
+    matches_num_vector[i] <- length(unique(post_analysis_3t3_with_mouse[which(post_analysis_3t3_with_mouse$uniprot ==
+                                                             temp_uniprot),
+                                                     "gene_name"]))
+    #Only assign if exactly one gene match
+    if(matches_num_vector[i] == 1){
+      
+      raw_data_log_norm[i, "new_gene"] <- unique(post_analysis_3t3_with_mouse[which(post_analysis_3t3_with_mouse$uniprot ==
+                                                             temp_uniprot),
+                                                     "gene_name"])
+    #Fuse matches if multiple
+    } else if (matches_num_vector[i] > 1){
+      raw_data_log_norm[i, "new_gene"] <- paste(unique(post_analysis_3t3_with_mouse[which(post_analysis_3t3_with_mouse$uniprot ==
+                                                             temp_uniprot),
+                                                     "gene_name"]),
+                                                     collapse = "___")
+      
+    }
+      }
+}
+
+
+##Deal with double and triple matches
+raw_data_log_norm[grep("___",
+                       raw_data_log_norm$new_gene), ]
+raw_data_log_norm[which(raw_data_log_norm$new_gene == "Tra2a___Tra2a;Tra2b___Tra2b"), 
+          "new_gene"] <- "Tra2a"
+raw_data_log_norm[which(raw_data_log_norm$new_gene == "Sorbs1___"), 
+          "new_gene"] <- "Sorbs1"
+
+##Deal with NAs
+#If NA or "", just give old name
+for (i in 1:nrow(raw_data_log_norm)){
+  
+  if(is.na(raw_data_log_norm[i, "new_gene"]) |
+     raw_data_log_norm[i, "new_gene"] == ""){
+    
+    raw_data_log_norm[i, "new_gene"] <- raw_data_log_norm[i, "gene"]
+  }
+}
+
+
+###Make new row names, and uniprot and gene
+raw_data_log_norm$new_rownames <- apply(raw_data_log_norm[, c("new_gene",
+                                              "new_uniprot")],
+                                1,
+                                function(x) paste(x, 
+                                                  collapse = "_"))
+rownames(raw_data_log_norm) <- raw_data_log_norm$new_rownames
+raw_data_log_norm$uniprot <- sapply(rownames(raw_data_log_norm),
+                            function(x) strsplit(x, "_")[[1]][2])
+raw_data_log_norm$gene <- sapply(rownames(raw_data_log_norm),
+                            function(x) strsplit(x, "_")[[1]][1])
+
+
+
+####Add rownames to data_proc, and change uniprot
+data_proc$old_rownames <- rownames(data_proc)
+for (i in 1:nrow(data_proc)){
+  
+  data_proc$new_rownames[i] <- rownames(raw_data_log_norm)[which(raw_data_log_norm$old_rownames ==
+                                                                   data_proc$old_rownames[i])]
+}
+rownames(data_proc) <- data_proc$new_rownames
+data_proc$uniprot <- sapply(rownames(data_proc),
+                            function(x) strsplit(x, "_")[[1]][2])
+data_proc$gene <- sapply(rownames(data_proc),
+                            function(x) strsplit(x, "_")[[1]][1])
+```
+
+###Export
+```{r}
+save(data_proc, file = "output/data/prot_data_proc__1.RData")
+```
+
+Export raw data
+```{r}
+###Change colnames to grouped
+treatments <- sapply(colnames(data_proc[, 1:48]),
+                            function(x) strsplit(x, "_")[[1]][1])
+treatments_table <- table(treatments)
+treatments_table <- treatments_table[unique(treatments)]
+grouped_col_names <- as.list(unique(treatments))
+names(grouped_col_names) <- unique(treatments)
+for (j in 1:length(unique(treatments))){
+  
+  temp_treatment <- unique(treatments)[j]
+  
+  for (i in 1:treatments_table[temp_treatment]){
+    
+    grouped_col_names[[j]][i] <- paste(c(temp_treatment,
+                                         "GROUPED",
+                                         i),
+                                       collapse = "_")
+  }
+}
+grouped_col_names <- unlist(grouped_col_names)
+og_col_names <- colnames(raw_data_log_norm)[1:48]
+colnames(raw_data_log_norm)[1:48] <- grouped_col_names
+
+##Make grouped_to_og_colnames to map between the two
+grouped_to_og_colnames <- data.frame("grouped" = grouped_col_names,
+                                     "original" = og_col_names)
+save(grouped_to_og_colnames, file = "output/data/grouped_to_og_colnames__1.RData")
+
+
+###Export
+proteome_raw_3t3 <- raw_data_log_norm
+save(proteome_raw_3t3,
+     file = "output/data/total_proteome_raw_3t3__1.RData")
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

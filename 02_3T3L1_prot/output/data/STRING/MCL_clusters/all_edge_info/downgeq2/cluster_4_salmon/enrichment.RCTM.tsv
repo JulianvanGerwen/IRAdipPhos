@@ -1,0 +1,4 @@
+#term ID	term description	observed gene count	background gene count	strength	false discovery rate	matching proteins in your network (IDs)	matching proteins in your network (labels)
+MMU-6798695	Neutrophil degranulation	6	476	1.19	1.72e-05	10090.ENSMUSP00000027684,10090.ENSMUSP00000028241,10090.ENSMUSP00000029257,10090.ENSMUSP00000030538,10090.ENSMUSP00000035170,10090.ENSMUSP00000113322	Arl8a,Stom,Atp11b,Ddost,Dnajc13,Rab3d
+MMU-983712	Ion channel transport	2	159	1.19	0.0206	10090.ENSMUSP00000028241,10090.ENSMUSP00000029257	Stom,Atp11b
+MMU-382551	Transport of small molecules	3	624	0.77	0.0298	10090.ENSMUSP00000028241,10090.ENSMUSP00000029257,10090.ENSMUSP00000126080	Stom,Atp11b,Tusc3

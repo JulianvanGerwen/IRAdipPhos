@@ -1,0 +1,102 @@
+"","cluster","cluster_size","genes","KEGG_term_ID","KEGG_term_description","KEGG_observed_gene_count","KEGG_background_gene_count","KEGG_strength","KEGG_FDR","RCTM_term_ID","RCTM_term_description","RCTM_observed_gene_count","RCTM_background_gene_count","RCTM_strength","RCTM_FDR"
+"Red","Red",23,"Aacs;Acaa1b;Acadl;Acadsb;Acox1;Acox2;Acox3;Crat;Crot;Decr2;Dhrs4;Ehhadh;Ephx2;Gcdh;Gnpat;Hacl1;Hadha;Hsd17b4;Mccc1;Mlycd;Mpv17;Pccb;Slc25a20","mmu04146;mmu00071;mmu01100;mmu01212;mmu00280;mmu03320;mmu01040;mmu00640;mmu00592;mmu00650;mmu00410;mmu00380;mmu00310;mmu00120;mmu01200;mmu04024","Peroxisome;Fatty acid degradation;Metabolic pathways;Fatty acid metabolism;Valine, leucine and isoleucine degradation;PPAR signaling pathway;Biosynthesis of unsaturated fatty acids;Propanoate metabolism;alpha-Linolenic acid metabolism;Butanoate metabolism;beta-Alanine metabolism;Tryptophan metabolism;Lysine degradation;Primary bile acid biosynthesis;Carbon metabolism;cAMP signaling pathway","15; 8;15; 7; 7; 6; 4; 4; 3; 3; 3; 3; 3; 2; 3; 2","  84;  50;1296;  51;  55;  85;  27;  31;  24;  27;  32;  45;  58;  16; 118; 194","2.23;2.19;1.05;2.12;2.09;1.83;2.15;2.09;2.08;2.03;1.95;1.81;1.70;2.08;1.39;0.99","2.16e-29;7.52e-15;8.96e-13;8.96e-13;1.06e-12;1.52e-09;9.09e-08;1.32e-07;7.27e-06;9.06e-06;1.32e-05;3.18e-05;6.05e-05;2.60e-04;4.00e-04;2.52e-02","MMU-9033241;MMU-8978868;MMU-390918;MMU-556833;MMU-1430728;MMU-390247;MMU-389887;MMU-2046106;MMU-196780;MMU-70895;MMU-193368;MMU-77289;MMU-71291;MMU-1483206","Peroxisomal protein import;Fatty acid metabolism;Peroxisomal lipid metabolism;Metabolism of lipids;Metabolism;Beta-oxidation of very long chain fatty acids;Beta-oxidation of pristanoyl-CoA;alpha-linolenic acid (ALA) metabolism;Biotin transport and metabolism;Branched-chain amino acid catabolism;Synthesis of bile acids and bile salts via 7alpha-hydroxycholesterol;Mitochondrial Fatty Acid Beta-Oxidation;Metabolism of amino acids and derivatives;Glycerophospholipid biosynthesis","15;15;11;17;20; 6; 5; 3; 2; 2; 2; 2; 3; 2","  61; 196;  31; 615;1685;  13;   9;  14;   9;  18;  28;  36; 228; 108","2.37;1.87;2.53;1.42;1.06;2.65;2.73;2.31;2.33;2.03;1.84;1.73;1.10;1.25","6.24e-31;2.35e-24;4.71e-24;4.08e-21;6.08e-19;1.21e-13;9.59e-12;3.70e-06;2.60e-04;8.10e-04;1.70e-03;2.50e-03;5.00e-03;1.62e-02"
+"Salmon 3","Salmon 3",19,"Guf1;Rpl13a;Rpl18a;Rpl27;Rpl27a;Rpl30;Rpl32;Rpl34;Rpl36a;Rpl6;Rpl7a;Rpl9;Rps11;Rps16;Rps23;Rps6;Rps6ka3;Rps8;Rps9","mmu03010","Ribosome","16","128","2.16","6.54e-32","MMU-156827;MMU-72689;MMU-72695;MMU-72649;MMU-72702;MMU-6791226","L13a-mediated translational silencing of Ceruloplasmin expression;Formation of a pool of free 40S subunits;Formation of the ternary complex, and subsequently, the 43S complex;Translation initiation complex formation;Ribosomal scanning and start codon recognition;Major pathway of rRNA processing in the nucleolus and cytosol","5;4;4;4;4;4"," 50; 37; 40; 48; 46;102","2.06;2.10;2.06;1.99;2.00;1.66","5.33e-08;7.66e-07;7.69e-07;1.04e-06;1.04e-06;1.09e-05"
+"Fire Brick 3","Fire Brick 3",19,"Anapc1;Anapc4;Anapc5;Cdc16;Cdc23;Cul7;Dcaf11;Fbxo22;Glmn;Hectd1;Herc4;Nedd4;Psmb5;Psmd3;Psmd6;Rnf14;Trip12;Ube3c;Ube4b","mmu04120;mmu04914;mmu04114;mmu04110;mmu05166;mmu03050;mmu05169","Ubiquitin mediated proteolysis;Progesterone-mediated oocyte maturation;Oocyte meiosis;Cell cycle;HTLV-I infection;Proteasome;Epstein-Barr virus infection","11; 5; 5; 5; 5; 3; 3","137; 90;112;122;269; 45;205","1.97;1.81;1.71;1.68;1.33;1.89;1.23","6.72e-19;8.11e-08;1.54e-07;1.75e-07;6.31e-06;1.67e-05;1.10e-03","MMU-983168;MMU-174084;MMU-174154;MMU-174178;MMU-174184;MMU-69017;MMU-176408;MMU-2467813;MMU-69620;MMU-176407;MMU-176412;MMU-141430;MMU-174048;MMU-179409;MMU-2262752;MMU-8951664;MMU-2559582;MMU-8948751;MMU-1236978;MMU-174113;MMU-349425;MMU-350562;MMU-4641257;MMU-69229;MMU-69601;MMU-75815;MMU-8854050;MMU-8939902;MMU-8941858;MMU-450408;MMU-4641258;MMU-5610780;MMU-5607761;MMU-5676590;MMU-68827;MMU-5610785;MMU-187577;MMU-4608870;MMU-1169091;MMU-5358346;MMU-1234176;MMU-5658442;MMU-8939236;MMU-2262749;MMU-68949;MMU-5687128;MMU-8852276;MMU-195253;MMU-2871837;MMU-5689603;MMU-202424;MMU-9020702;MMU-382556;MMU-5632684;MMU-69481;MMU-1280215;MMU-5689880","Antigen processing: Ubiquitination & Proteasome degradation;Autodegradation of Cdh1 by Cdh1:APC/C;APC/C:Cdc20 mediated degradation of Securin;APC/C:Cdh1 mediated degradation of Cdc20 and other APC/C:Cdh1 targeted proteins in late mitosis/early G1;Cdc20:Phospho-APC/C mediated degradation of Cyclin A;CDK-mediated phosphorylation and removal of Cdc6;Regulation of APC/C activators between G1/S and early anaphase;Separation of Sister Chromatids;Cell Cycle Checkpoints;Conversion from APC/C:Cdc20 to APC/C:Cdh1 in late anaphase;Phosphorylation of the APC/C;Inactivation of APC/C via direct inhibition of the APC/C complex;APC/C:Cdc20 mediated degradation of Cyclin B;APC-Cdc20 mediated degradation of Nek2A;Cellular responses to stress;Neddylation;Senescence-Associated Secretory Phenotype (SASP);Regulation of PTEN stability and activity;Cross-presentation of soluble exogenous antigens (endosomes);SCF-beta-TrCP mediated degradation of Emi1;Autodegradation of the E3 ubiquitin ligase COP1;Regulation of ornithine decarboxylase (ODC);Degradation of AXIN;Ubiquitin-dependent degradation of Cyclin D1;Ubiquitin Mediated Degradation of Phosphorylated Cdc25A;Ubiquitin-dependent degradation of Cyclin D;FBXL7 down-regulates AURKA during mitotic entry and in early mitosis;Regulation of RUNX2 expression and activity;Regulation of RUNX3 expression and activity;AUF1 (hnRNP D0) binds and destabilizes mRNA;Degradation of DVL;Degradation of GLI1 by the proteasome;Dectin-1 mediated noncanonical NF-kB signaling;NIK-->noncanonical NF-kB signaling;CDT1 association with the CDC6:ORC:origin complex;GLI3 is processed to GLI3R by the proteasome;SCF(Skp2)-mediated degradation of p27/p21;Asymmetric localization of PCP proteins;Activation of NF-kappaB in B cells;Hedgehog ligand biogenesis;Oxygen-dependent proline hydroxylation of Hypoxia-inducible Factor Alpha;Regulation of RAS by GAPs;RUNX1 regulates transcription of genes involved in differentiation of HSCs;Cellular response to hypoxia;Orc1 removal from chromatin;MAPK6/MAPK4 signaling;The role of GTSE1 in G2/M progression after G2 checkpoint;Degradation of beta-catenin by the destruction complex;FCERI mediated NF-kB activation;UCH proteinases;Downstream TCR signaling;Interleukin-1 signaling;ABC-family proteins mediated transport;Hedgehog 'on' state;G2/M Checkpoints;Cytokine Signaling in Immune system;Ub-specific processing proteases","16; 7; 7; 7; 7; 7; 7; 7; 7; 4; 4; 4; 4; 4; 7; 6; 4; 4; 3; 3; 3; 3; 3; 3; 3; 3; 3; 3; 3; 3; 3; 3; 3; 3; 3; 3; 3; 3; 3; 3; 3; 3; 3; 3; 3; 3; 3; 3; 3; 3; 3; 3; 3; 3; 3; 4; 3","295; 57; 61; 66; 66; 66; 76;169;240; 18; 18; 19; 20; 22;327;230; 57; 64; 46; 50; 47; 48; 49; 46; 47; 46; 50; 46; 49; 52; 52; 52; 53; 53; 53; 54; 55; 57; 58; 58; 60; 61; 62; 64; 64; 67; 68; 72; 72; 80; 81; 86; 91;105;128;357;157","1.80;2.15;2.12;2.09;2.09;2.09;2.03;1.68;1.53;2.41;2.41;2.39;2.37;2.32;1.40;1.48;1.91;1.86;1.88;1.84;1.87;1.86;1.85;1.88;1.87;1.88;1.84;1.88;1.85;1.83;1.83;1.83;1.82;1.82;1.82;1.81;1.80;1.79;1.78;1.78;1.76;1.76;1.75;1.74;1.74;1.72;1.71;1.68;1.68;1.64;1.63;1.61;1.58;1.52;1.43;1.11;1.35","2.15e-25;1.69e-12;2.19e-12;3.15e-12;3.15e-12;3.15e-12;4.30e-12;5.93e-10;5.53e-09;1.66e-08;1.66e-08;1.85e-08;2.06e-08;2.80e-08;3.33e-08;1.44e-07;7.72e-07;1.17e-06;3.32e-05;3.32e-05;3.32e-05;3.32e-05;3.32e-05;3.32e-05;3.32e-05;3.32e-05;3.32e-05;3.32e-05;3.32e-05;3.51e-05;3.51e-05;3.51e-05;3.52e-05;3.52e-05;3.52e-05;3.53e-05;3.66e-05;3.93e-05;4.06e-05;4.06e-05;4.22e-05;4.36e-05;4.38e-05;4.74e-05;4.74e-05;5.13e-05;5.13e-05;5.86e-05;5.86e-05;7.40e-05;7.51e-05;8.64e-05;9.86e-05;1.40e-04;2.40e-04;2.90e-04;4.20e-04"
+"Salmon","Salmon",18,"Arl8a;Atp11b;Dad1;Ddost;Dnajc13;Jagn1;Krtcap2;Magt1;Manba;Ostc;Rab3d;Rpn1;Rpn2;Stom;Stt3a;Stt3b;Tmem165;Tusc3","mmu00510;mmu04141;mmu01100","N-Glycan biosynthesis;Protein processing in endoplasmic reticulum;Metabolic pathways","7;7;7","  49; 161;1296","2.24;1.73;0.82","8.58e-14;1.16e-10;8.80e-05","MMU-6798695;MMU-983712;MMU-382551","Neutrophil degranulation;Ion channel transport;Transport of small molecules","6;2;3","476;159;624","1.19;1.19;0.77","1.72e-05;2.06e-02;2.98e-02"
+"Fire Brick","Fire Brick",9,"Dhcr24;Dhcr7;Fdps;Lbr;Lss;Msmo1;Nsdhl;Sqle;Tm7sf2",NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+"Salmon 2","Salmon 2",8,"Aktip;Ccz1;Vps16;Vps18;Vps33a;Vps39;Vps41;Vps45",NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+"Fire Brick 2","Fire Brick 2",7,"Atp5f1;Atp5l;Mp68;Mtch1;Mtch2;Sdhc;Sdhd",NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+"Sandy Brown","Sandy Brown",7,"Lman2l;Ppp6c;Sec24b;Trappc1;Trappc11;Trappc5;Trappc9",NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+"Saddle Brown","Saddle Brown",7,"Mrpl10;Mrpl16;Mrpl51;Mrps2;Mrps24;Mrps30;Mrps5",NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+"Brown","Brown",7,"Kdelr1;Kif1b;Kifap3;Slc33a1;Slc35b2;Surf4;Tmed3",NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+"Light Green 8","Light Green 8",7,"Acaca;Acacb;Acsl1;Cpt1a;Fasn;Scd1;Scd2",NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+"Light Green 4","Light Green 4",7,"Ano6;Dgat1;Hgsnat;Mfsd8;Mlec;Mttp;Retsat",NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+"Green","Green",7,"Cdc40;Cpsf3l;Ints2;Ncbp1;Plrg1;Thoc2;Thoc5",NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+"Light Green 3","Light Green 3",7,"Arap1;Arhgap29;Arhgap5;Arhgef2;Rhot1;Rhot2;Usp30",NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+"Light Green 7","Light Green 7",7,"Dscr3;ENSMUSG00000030982;Snx27;Vps26a;Vps29;Vps36;Wls",NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+"Light Green 11","Light Green 11",6,"Atp2b4;Lipe;Prkaca;Prkacb;Sik2;Tubgcp2",NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+"Light Green 14","Light Green 14",6,"Foxred1;Ndufa11;Ndufa9;Romo1;mt-Nd1;mt-Nd4",NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+"Light Green 15","Light Green 15",6,"Cog4;Cog6;Cog7;Ric1;Vps52;Vps53",NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+"Light Green 12","Light Green 12",6,"Gm3839;Ldhb;Me1;Nme3;Pcx;Pkm",NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+"Light Green 10","Light Green 10",6,"Fars2;Lars2;Mars2;Pars2;Rars2;Vars2",NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+"Light Green 5","Light Green 5",6,"Gpaa1;Mpdu1;Pgap1;Pigk;Pigt;Pigu",NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+"Light Green","Light Green",6,"Alg1;Alg11;Alg3;Alg9;Dolk;Dpm1",NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+"Light Green 2","Light Green 2",6,"Fig4;Pi4ka;Pi4kb;Pik3r4;Pikfyve;Vac14",NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+"Light Green 6","Light Green 6",5,"Akt2;Gsk3a;Ralgapa2;Ralgapb;Tbc1d4",NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+"Light Green 9","Light Green 9",5,"Acly;Acss2;Impdh1;Pck1;Slc25a1",NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+"Light Green 13","Light Green 13",5,"Ces1d;Ces1f;Hsd11b1;Ugt1a6b;Ugt1a7c",NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+"Medium Aqua Marine","Medium Aqua Marine",5,"Agl;Phkb;Phkg1;Pygb;Pygl",NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+"Medium Aqua Marine 2","Medium Aqua Marine 2",5,"Elovl1;Hsd17b12;Ptplad1;Tecr;Tmco1",NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+"Aquamarine 10","Aquamarine 10",5,"Derl2;Erlin2;Esyt1;Rnf170;Syvn1",NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+"Aquamarine 8","Aquamarine 8",5,"Coasy;Dcakd;Pank2;Pank3;Ppcs",NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+"Aquamarine 6","Aquamarine 6",5,"Depdc5;Nprl3;Rraga;Rragc;Wdr24",NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+"Aquamarine 4","Aquamarine 4",5,"Agpat2;Agpat3;Agpat9;Gpam;Gpd1",NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+"Aquamarine 2","Aquamarine 2",5,"B3glct;Islr;Pcyox1l;Sccpdh;Thbs1",NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+"Cyan","Cyan",4,"Ppp2r5a;Ppp2r5b;Taok1;Wdr82",NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+"Aquamarine","Aquamarine",4,"Abcd3;Pex11a;Pex16;Pex3",NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+"Aquamarine 3","Aquamarine 3",4,"Adipoq;Adrb3;Car3;Cidec",NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+"Aquamarine 5","Aquamarine 5",4,"Chpt1;Ept1;Lpcat3;Ptdss2",NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+"Aquamarine 7","Aquamarine 7",4,"Pfkfb1;Pfkfb3;Pfkl;Pfkm",NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+"Aquamarine 9","Aquamarine 9",4,"Msh2;Msh6;Rfc3;Trim25",NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+"Sky Blue 10","Sky Blue 10",4,"Ephx1;Mgst1;Mgst2;Mgst3",NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+"Sky Blue 8","Sky Blue 8",4,"Cyfip1;Elmo2;Mettl7a1;Nckap1",NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+"Sky Blue 6","Sky Blue 6",4,"Acad11;Acad8;Acsl3;Acsl5",NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+"Sky Blue 4","Sky Blue 4",4,"Golt1b;Slc25a3;Slc25a4;Slc25a5",NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+"Sky Blue 2","Sky Blue 2",4,"Ormdl1;Ormdl2;Sptlc1;Sptlc2",NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+"Sky Blue","Sky Blue",4,"Ap1s1;Ldlrap1;Tfrc;Vamp7",NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+"Sky Blue 3","Sky Blue 3",4,"Rab24;Rab3a;Rab8b;Wdr7",NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+"Sky Blue 5","Sky Blue 5",4,"Exoc2;Exoc5;Exoc6;Myo5a",NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+"Sky Blue 7","Sky Blue 7",3,"Ccbl2;Dnajc10;Txnrd3",NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+"Sky Blue 9","Sky Blue 9",3,"Abcd2;Pxmp4;Slc25a17",NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+"Cornflower Blue 7","Cornflower Blue 7",3,"Flot1;Slc2a4;Ucp3",NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+"Cornflower Blue 6","Cornflower Blue 6",3,"Bckdhb;Dhtkd1;Ogdh",NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+"Cornflower Blue 4","Cornflower Blue 4",3,"Sec61a1;Sec61a2;Srpr",NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+"Cornflower Blue 2","Cornflower Blue 2",3,"Enpp1;Pde2a;Uckl1",NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+"Blue","Blue",3,"Eif2ak4;Mtor;Rptor",NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+"Cornflower Blue","Cornflower Blue",3,"Efr3a;Fam126a;Ttc7b",NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+"Cornflower Blue 3","Cornflower Blue 3",3,"Irs1;Irs2;Mapk9",NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+"Cornflower Blue 5","Cornflower Blue 5",3,"Brix1;Drg1;Pus7",NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+"Medium Slate Blue 5","Medium Slate Blue 5",3,"Abcb7;Aco1;Slc11a2",NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+"Medium Slate Blue 3","Medium Slate Blue 3",3,"Arpc1a;Arpc1b;Arpc4",NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+"Medium Slate Blue","Medium Slate Blue",3,"Prmt1;Prmt5;Smarca4",NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+"Purple","Purple",2,"Aqr;Tbrg4",NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+"Medium Slate Blue 2","Medium Slate Blue 2",2,"Csk;Raf1",NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+"Medium Slate Blue 4","Medium Slate Blue 4",2,"Adh7;Aox1",NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+"Medium Purple 3","Medium Purple 3",2,"Akr1b10;Aldh9a1",NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+"Medium Purple","Medium Purple",2,"Pex1;Pex6",NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+"Medium Purple 2","Medium Purple 2",2,"Gys1;Ppp1r3d",NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+"Medium Purple 4","Medium Purple 4",2,"Gpcpd1;Pnpla6",NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+"Medium Purple 5","Medium Purple 5",2,"Atp2a2;Itpr2",NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+"Medium Purple 6","Medium Purple 6",2,"Arhgap35;Rasa1",NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+"Medium Purple 7","Medium Purple 7",2,"Ap3b1;Ap3d1",NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+"Medium Purple 8","Medium Purple 8",2,"Fam73b;Ncln",NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+"Orchid 10","Orchid 10",2,"Ap2a1;Htt",NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+"Orchid 9","Orchid 9",2,"Man2c1;Ngly1",NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+"Orchid 8","Orchid 8",2,"Washc4;Washc5",NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+"Orchid 7","Orchid 7",2,"Tfb1m;Trmu",NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+"Orchid 5","Orchid 5",2,"Dnajc11;Samm50",NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+"Orchid 3","Orchid 3",2,"Cbl;Lrig1",NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+"Violet 6","Violet 6",2,"Psmg1;Wrb",NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+"Violet 4","Violet 4",2,"Sec11a;Spcs3",NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+"Violet 2","Violet 2",2,"Bscl2;Fitm2",NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+"Violet","Violet",2,"Lclat1;Lpgat1",NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+"Violet 3","Violet 3",2,"Hspa12a;Ndc1",NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+"Violet 5","Violet 5",2,"Gnpda1;Gnpda2",NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+"Violet 7","Violet 7",2,"Man2a1;Mgat1",NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+"Orchid","Orchid",2,"Fuca2;Ktn1",NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+"Orchid 2","Orchid 2",2,"Fam91a1;Wdr11",NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+"Orchid 4","Orchid 4",2,"Immp2l;Tmem214",NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+"Orchid 6","Orchid 6",2,"Cox15;mt-Co1",NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+"Hot Pink 5","Hot Pink 5",2,"Ptges;Ptgs1",NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+"Hot Pink 3","Hot Pink 3",2,"Cnot10;Cnot11",NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+"Hot Pink","Hot Pink",2,"Col11a1;Col12a1",NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+"Hot Pink 2","Hot Pink 2",2,"Lgals12;Vps13c",NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+"Hot Pink 4","Hot Pink 4",2,"Mtm1;Sbf1",NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+"Pale Violet Red 3","Pale Violet Red 3",1,"Adh5",NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+"Pale Violet Red 2","Pale Violet Red 2",1,"Prkag1",NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+"Pale Violet Red","Pale Violet Red",1,"Pde3b",NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+"Pink","Pink",1,"Carm1",NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+"Light Coral 4","Light Coral 4",1,"Ormdl3",NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+"Light Coral 3","Light Coral 3",1,"Ampd2",NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+"Light Coral","Light Coral",1,"Pla2g6",NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+"Light Coral 2","Light Coral 2",1,"Cltc",NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA

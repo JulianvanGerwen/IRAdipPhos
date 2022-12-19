@@ -1,0 +1,333 @@
+---
+title: "05_enrichment"
+output: html_document
+---
+
+###Background
+Here I perform enrichment analysis
+
+###Initialise
+```{r}
+#Packages
+library(ggplot2)
+library(ggrepel)
+library(RColorBrewer)
+library(org.Mm.eg.db)
+library(reshape2)
+library(seqinr)
+library(readr)
+library(limma)
+library(GSA)
+library(scales)
+
+#Scripts
+home_directory <- "..\\..\\..\\..\\..\\"
+source("..\\scripts/essential_visualisations_JvG.R")
+source("scripts/01_objects.R")
+source("scripts/02_functions.R")
+
+##Load in data
+#Proteome
+load("data/intermediate/proteome_post_analysis_3t3.RData")
+```
+
+###KEGG
+
+Enrichment:
+```{r}
+###Load in KEGG
+kegg_pathways_raw <- GSA.read.gmt("data/intermediate/msigdb/c2.cp.kegg.v7.2.symbols.gmt")
+kegg_pathways_list <- kegg_pathways_raw$genesets
+names(kegg_pathways_list) <- kegg_pathways_raw$geneset.names
+
+##To lower
+for (i in 1:length(kegg_pathways_list)){
+  
+  kegg_pathways_list[[i]] <- sapply(kegg_pathways_list[[i]],
+                                        function(x){
+                                          x <- tolower(x)
+                                          split_x <- strsplit(x, "")[[1]]
+                                          return(paste(c(toupper(split_x[1]),
+                                                         split_x[-1]),
+                                                       collapse = ""))
+                                        })
+}
+
+####3T3-L1
+
+###GST
+kegg_gst_up_list <- gst_multiple_treatment_enricher(treatments = c("CI",
+                "DEX",
+                "TNF",
+                "MPQ",
+                "AA"),
+                                pathways_list = kegg_pathways_list,
+                                stats = proteome_post_analysis_3t3[, grep("GROUPED_FC",
+                                                                          colnames(proteome_post_analysis_3t3))],
+             stats_genes = proteome_post_analysis_3t3$gene,
+             alternative = "up",
+             type = "t",
+             tidy_names = TRUE)
+
+kegg_gst_down_list <- gst_multiple_treatment_enricher(treatments = c("CI",
+                "DEX",
+                "TNF",
+                "MPQ",
+                "AA"),
+                                pathways_list = kegg_pathways_list,
+                                stats = proteome_post_analysis_3t3[, grep("GROUPED_FC",
+                                                                          colnames(proteome_post_analysis_3t3))],
+             stats_genes = proteome_post_analysis_3t3$gene,
+             alternative = "down",
+             type = "t",
+             tidy_names = TRUE)
+
+###Visualise
+gst_heatmap(kegg_gst_up_list,
+            colour = "red")  +
+  ggtitle("KEGG pathways up in models (GST)") 
+  ggsave("output/images/analysis/enrichment/kegg_gst_up.pdf",
+         width = 6,
+         height = 4)
+gst_heatmap(kegg_gst_down_list,
+            colour = "blue") +
+  ggtitle("KEGG pathways down in models (GST)") 
+  ggsave("output/images/analysis/enrichment/kegg_gst_down.pdf",
+         width = 8,
+         height = 10)
+  
+##Export
+  #kegg_gst_up_list_df
+
+#Up
+up_common_rows <- map(kegg_gst_up_list, rownames) %>% unlist %>% unique
+map(kegg_gst_up_list, head)
+kegg_gst_up_list_df <- map2(kegg_gst_up_list, names(kegg_gst_up_list),
+                            function(data, name){
+  data <- data[up_common_rows, ]
+  colnames(data) <- paste(name, colnames(data), sep = "_")
+  return(data)
+}) %>%
+  purrr::reduce(cbind) %>% as.data.frame
+write.csv(kegg_gst_up_list_df, file = "output/data/kegg_gst_up_list_df.csv")
+
+#down
+down_common_rows <- map(kegg_gst_down_list, rownames) %>% unlist %>% unique
+map(kegg_gst_down_list, head)
+kegg_gst_down_list_df <- map2(kegg_gst_down_list, names(kegg_gst_down_list),
+                            function(data, name){
+  data <- data[down_common_rows, ]
+  colnames(data) <- paste(name, colnames(data), sep = "_")
+  return(data)
+}) %>%
+  purrr::reduce(cbind) %>% as.data.frame
+write.csv(kegg_gst_down_list_df, file = "output/data/kegg_gst_down_list_df.csv")
+```
+
+
+
+###STRING
+
+Export for STRING Web enrichment
+```{r}
+###Overrepresentation
+
+##Format:
+#Uniprot
+
+##Background (all quantified)
+write.csv(proteome_post_analysis_3t3$uniprot[which(rowSums(is.na(proteome_post_analysis_3t3[, 1:48])) < 48)],
+          file = "output/data/STRING/3T3L1_proteome_allquant_uniprot.csv")
+write.csv(proteome_post_analysis_3t3$gene[which(rowSums(is.na(proteome_post_analysis_3t3[, 1:48])) < 48)],
+          file = "output/data/STRING/3T3L1_proteome_allquant_gene.csv")
+
+##Up geq2
+write.csv(proteome_post_analysis_3t3$uniprot[which(proteome_post_analysis_3t3$numisupmodels >= 2)],
+          file = "output/data/STRING/3T3L1_proteome_upgeq2_uniprot.csv")
+write.csv(proteome_post_analysis_3t3$gene[which(proteome_post_analysis_3t3$numisupmodels >= 2)],
+          file = "output/data/STRING/3T3L1_proteome_upgeq2_gene.csv")
+
+##down geq2
+write.csv(proteome_post_analysis_3t3$uniprot[which(proteome_post_analysis_3t3$numisdownmodels >= 2)],
+          file = "output/data/STRING/3T3L1_proteome_downgeq2_uniprot.csv")
+write.csv(proteome_post_analysis_3t3$gene[which(proteome_post_analysis_3t3$numisdownmodels >= 2)],
+          file = "output/data/STRING/3T3L1_proteome_downgeq2_gene.csv")
+```
+
+MCL clusters
+
+Read in STRING enrichment for MCL clusters, and make summary tables for each cluster
+```{r}
+###Up geq 2 cluster
+
+##Read in cluster summary
+upgeq2_MCL_cluster_raw <- read.csv("output/data/STRING/MCL_clusters/stringent_edge_info/upgeq2/3T3L1_proteome_upgeq2_MCL_clusters.csv",
+         stringsAsFactors = FALSE)
+
+##Condense
+upgeq2_MCL_cluster_cond <- data.frame("cluster" = unique(upgeq2_MCL_cluster_raw$cluster.color),
+                                      stringsAsFactors = FALSE)
+rownames(upgeq2_MCL_cluster_cond) <- upgeq2_MCL_cluster_cond$cluster
+for (i in 1:nrow(upgeq2_MCL_cluster_cond)){
+  
+  upgeq2_MCL_cluster_cond$cluster_size[i] <- upgeq2_MCL_cluster_raw$gene.count[which(upgeq2_MCL_cluster_raw$cluster.color ==
+                                                                                    upgeq2_MCL_cluster_cond$cluster[i])[1]]
+  upgeq2_MCL_cluster_cond$genes[i] <- paste(upgeq2_MCL_cluster_raw$protein.name[which(upgeq2_MCL_cluster_raw$cluster.color ==
+                                                                                     upgeq2_MCL_cluster_cond$cluster[i])],
+                                         collapse = ";")
+}
+
+##Integrate enrichment
+
+#Initialise columns
+upgeq2_MCL_cluster_cond[, c("KEGG_term_ID",
+                            "KEGG_term_description",
+                            "KEGG_observed_gene_count",
+                            "KEGG_background_gene_count",
+                            "KEGG_strength",
+                            "KEGG_FDR",
+                            "RCTM_term_ID",
+                            "RCTM_term_description",
+                            "RCTM_observed_gene_count",
+                            "RCTM_background_gene_count",
+                            "RCTM_strength",
+                            "RCTM_FDR")] <- NA
+
+#Add for pathways with >=10 genes
+for (i in 1:length(which(upgeq2_MCL_cluster_cond$cluster_size >= 10))){
+#KEGG
+temp_KEGG <- read_tsv(paste(c("output/data/STRING/MCL_clusters/stringent_edge_info/upgeq2/cluster_",
+        i,
+        "_",
+        tolower(upgeq2_MCL_cluster_cond$cluster[i]),
+        "/enrichment.KEGG.tsv"),
+      collapse = ""))
+temp_KEGG_dense <- apply(temp_KEGG,
+      2,
+      FUN = function(x) paste(x,
+                        collapse = ";"))
+#RCTM
+temp_RCTM <- read_tsv(paste(c("output/data/STRING/MCL_clusters/stringent_edge_info/upgeq2/cluster_",
+        i,
+        "_",
+        tolower(upgeq2_MCL_cluster_cond$cluster[i]),
+        "/enrichment.RCTM.tsv"),
+      collapse = ""))
+temp_RCTM_dense <- apply(temp_RCTM,
+      2,
+      FUN = function(x) paste(x,
+                        collapse = ";"))
+
+#Assign
+upgeq2_MCL_cluster_cond[i, c("KEGG_term_ID",
+                            "KEGG_term_description",
+                            "KEGG_observed_gene_count",
+                            "KEGG_background_gene_count",
+                            "KEGG_strength",
+                            "KEGG_FDR",
+                            "RCTM_term_ID",
+                            "RCTM_term_description",
+                            "RCTM_observed_gene_count",
+                            "RCTM_background_gene_count",
+                            "RCTM_strength",
+                            "RCTM_FDR")] <- c(temp_KEGG_dense[1:6],
+                                              temp_RCTM_dense[1:6])
+}
+
+##Export
+write.csv(upgeq2_MCL_cluster_cond,
+          file = "output/data/STRING/MCL_clusters/stringent_edge_info/upgeq2/3T3L1_proteome_upgeq2_MCL_clusters_proc.csv")
+
+
+###downgeq2 cluster
+
+##Read in cluster summary
+downgeq2_MCL_cluster_raw <- read.csv("output/data/STRING/MCL_clusters/stringent_edge_info/downgeq2/3T3L1_proteome_downgeq2_MCL_clusters.csv",
+         stringsAsFactors = FALSE)
+
+##Condense
+downgeq2_MCL_cluster_cond <- data.frame("cluster" = unique(downgeq2_MCL_cluster_raw$cluster.color),
+                                      stringsAsFactors = FALSE)
+rownames(downgeq2_MCL_cluster_cond) <- downgeq2_MCL_cluster_cond$cluster
+for (i in 1:nrow(downgeq2_MCL_cluster_cond)){
+  
+  downgeq2_MCL_cluster_cond$cluster_size[i] <- downgeq2_MCL_cluster_raw$gene.count[which(downgeq2_MCL_cluster_raw$cluster.color ==
+                                                                                    downgeq2_MCL_cluster_cond$cluster[i])[1]]
+  downgeq2_MCL_cluster_cond$genes[i] <- paste(downgeq2_MCL_cluster_raw$protein.name[which(downgeq2_MCL_cluster_raw$cluster.color ==
+                                                                                     downgeq2_MCL_cluster_cond$cluster[i])],
+                                         collapse = ";")
+}
+
+##Integrate enrichment
+
+#Initialise columns
+downgeq2_MCL_cluster_cond[, c("KEGG_term_ID",
+                            "KEGG_term_description",
+                            "KEGG_observed_gene_count",
+                            "KEGG_background_gene_count",
+                            "KEGG_strength",
+                            "KEGG_FDR",
+                            "RCTM_term_ID",
+                            "RCTM_term_description",
+                            "RCTM_observed_gene_count",
+                            "RCTM_background_gene_count",
+                            "RCTM_strength",
+                            "RCTM_FDR")] <- NA
+
+#Add for pathways with >=10 genes
+for (i in 1:length(which(downgeq2_MCL_cluster_cond$cluster_size >= 10))){
+#KEGG
+temp_KEGG <- read_tsv(paste(c("output/data/STRING/MCL_clusters/stringent_edge_info/downgeq2/cluster_",
+        i,
+        "_",
+        tolower(downgeq2_MCL_cluster_cond$cluster[i]),
+        "/enrichment.KEGG.tsv"),
+      collapse = ""))
+temp_KEGG_dense <- apply(temp_KEGG,
+      2,
+      FUN = function(x) paste(x,
+                        collapse = ";"))
+#RCTM
+temp_RCTM <- read_tsv(paste(c("output/data/STRING/MCL_clusters/stringent_edge_info/downgeq2/cluster_",
+        i,
+        "_",
+        tolower(downgeq2_MCL_cluster_cond$cluster[i]),
+        "/enrichment.RCTM.tsv"),
+      collapse = ""))
+temp_RCTM_dense <- apply(temp_RCTM,
+      2,
+      FUN = function(x) paste(x,
+                        collapse = ";"))
+
+#Assign
+downgeq2_MCL_cluster_cond[i, c("KEGG_term_ID",
+                            "KEGG_term_description",
+                            "KEGG_observed_gene_count",
+                            "KEGG_background_gene_count",
+                            "KEGG_strength",
+                            "KEGG_FDR",
+                            "RCTM_term_ID",
+                            "RCTM_term_description",
+                            "RCTM_observed_gene_count",
+                            "RCTM_background_gene_count",
+                            "RCTM_strength",
+                            "RCTM_FDR")] <- c(temp_KEGG_dense[1:6],
+                                              temp_RCTM_dense[1:6])
+}
+
+##Export
+write.csv(downgeq2_MCL_cluster_cond,
+          file = "output/data/STRING/MCL_clusters/stringent_edge_info/downgeq2/3T3L1_proteome_downgeq2_MCL_clusters_proc.csv")
+```
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,772 @@
+---
+title: "02_stats"
+output: html_document
+---
+
+###Background
+Here I generate summary statistics and perform stats on the proteome data
+
+###Initialise
+```{r}
+#Packages
+library(multcomp)
+library(ggplot2)
+library(reshape2)
+
+#Scripts
+source("..\\scripts/essential_visualisations_JvG.R")
+source("scripts/01_objects.R")
+source("scripts/02_functions.R")
+
+#Load in data
+load("data/intermediate/prot_data_proc__1.RData")
+```
+
+
+###Tidy columns
+```{r}
+####BASAL and INS grouped
+treatments <- sapply(colnames(data_proc[, 1:48]),
+                            function(x) strsplit(x, "_")[[1]][1])
+treatments_table <- table(treatments)
+treatments_table <- treatments_table[unique(treatments)]
+grouped_col_names <- as.list(unique(treatments))
+names(grouped_col_names) <- unique(treatments)
+for (j in 1:length(unique(treatments))){
+  
+  temp_treatment <- unique(treatments)[j]
+  
+  for (i in 1:treatments_table[temp_treatment]){
+    
+    grouped_col_names[[j]][i] <- paste(c(temp_treatment,
+                                         "GROUPED",
+                                         i),
+                                       collapse = "_")
+  }
+}
+grouped_col_names <- unlist(grouped_col_names)
+data_proc[, grouped_col_names] <- data_proc[, 1:48]
+
+
+
+####Data with ins and grouped ns equalised
+#CI and TNF have 3 in basal, but 4 in insulin. Cut off 1 from insulin so that it's equal
+data_proc_equalns <- data_proc[, -which(colnames(data_proc) %in%
+                                          c("CI_INS_4",
+                                            "TNF_INS_4",
+                                            "CI_GROUPED_7",
+                                            "TNF_GROUPED_7"))]
+```
+
+
+###Summary statistics
+```{r}
+####FCs
+
+###FC model compared to control maker
+#control_name e.g. CONTROL, NORMAL
+#model_names e.g. TNF, DEX
+#condition e.g. BASAL, INS
+FC_model_to_control_maker <- function(data,
+                                      control_name,
+                                      model_names,
+                                      condition){
+    
+  ##Make labels
+  control_label <- paste(c(control_name,
+                           condition),
+                         collapse = "_")
+  model_labels <- sapply(model_names,
+                         function(x) paste(c(x,
+                                             condition),
+                                           collapse = "_"))
+  
+  
+  ##Make averages
+  
+  #Control average
+  control_average <- apply(data[, grep(control_label, colnames(data))],
+                           1,
+                           mean,
+                           na.rm = TRUE)
+  
+  #Model averages
+  model_averages <- matrix(NA,
+                           nrow = nrow(data),
+                           ncol = length(model_labels))
+  rownames(model_averages) <- rownames(data)
+  colnames(model_averages) <- model_labels
+  
+  for (i in 1:length(model_labels)){
+    
+    temp_model_label <- model_labels[i]
+    temp_model_average <- apply(data[, grep(temp_model_label, colnames(data))],
+                                1,
+                                mean,
+                                na.rm = TRUE)
+    model_averages[, i] <- temp_model_average
+    
+  }
+  
+  
+  ##Make FCs
+  model_FCs <- model_averages - control_average
+  
+  ###Return
+  return(model_FCs)
+}
+
+###Add FCs
+
+##data_proc
+data_proc[, c("CI_BASAL_FC",
+              "DEX_BASAL_FC",
+              "TNF_BASAL_FC",
+              "MPQ_BASAL_FC",
+              "AA_BASAL_FC")] <- FC_model_to_control_maker(data = data_proc[, 1:48],
+                          control_name = "NORMAL",
+                          model_names = c("CI",
+                                          "DEX",
+                                          "TNF",
+                                          "MPQ",
+                                          "AA"),
+                          condition = "BASAL")
+data_proc[, c("CI_INS_FC",
+              "DEX_INS_FC",
+              "TNF_INS_FC",
+              "MPQ_INS_FC",
+              "AA_INS_FC")] <- FC_model_to_control_maker(data = data_proc[, 1:48],
+                          control_name = "NORMAL",
+                          model_names = c("CI",
+                                          "DEX",
+                                          "TNF",
+                                          "MPQ",
+                                          "AA"),
+                          condition = "INS")
+data_proc[, c("CI_GROUPED_FC",
+              "DEX_GROUPED_FC",
+              "TNF_GROUPED_FC",
+              "MPQ_GROUPED_FC",
+              "AA_GROUPED_FC")] <- FC_model_to_control_maker(data = data_proc[, grep("GROUPED_\\d+",
+                                                                                     colnames(data_proc))],
+                          control_name = "NORMAL",
+                          model_names = c("CI",
+                                          "DEX",
+                                          "TNF",
+                                          "MPQ",
+                                          "AA"),
+                          condition = "GROUPED")
+
+##data_proc_equalns
+data_proc_equalns[, c("CI_BASAL_FC",
+              "DEX_BASAL_FC",
+              "TNF_BASAL_FC",
+              "MPQ_BASAL_FC",
+              "AA_BASAL_FC")] <- FC_model_to_control_maker(data = data_proc_equalns[, 1:46],
+                          control_name = "NORMAL",
+                          model_names = c("CI",
+                                          "DEX",
+                                          "TNF",
+                                          "MPQ",
+                                          "AA"),
+                          condition = "BASAL")
+data_proc_equalns[, c("CI_INS_FC",
+              "DEX_INS_FC",
+              "TNF_INS_FC",
+              "MPQ_INS_FC",
+              "AA_INS_FC")] <- FC_model_to_control_maker(data = data_proc_equalns[, 1:46],
+                          control_name = "NORMAL",
+                          model_names = c("CI",
+                                          "DEX",
+                                          "TNF",
+                                          "MPQ",
+                                          "AA"),
+                          condition = "INS")
+
+
+####Site medians
+
+###Function: Get medians for sites and conditions
+median_matrix_getter <- function(data,
+                                 conditions){
+  ##Set up output
+  output_m <- matrix(NA,
+                     nrow = nrow(data),
+                     ncol = length(conditions))
+  rownames(output_m) <- rownames(data)
+  colnames(output_m) <- sapply(conditions,
+                               function(x) paste(c(x, 
+                                                   "_median"),
+                                                 collapse = ""))
+  
+  ##Loop over conditions
+  for (i in 1:length(conditions)){
+    
+    temp_condition <- conditions[i]
+    output_m[, i] <- apply(data[, grep(temp_condition,
+                                       colnames(data))],
+                           1,
+                           median,
+                           na.rm = TRUE)
+  }
+  
+  ##Return
+  return(output_m)
+}
+
+#BASAL and INS
+data_proc[, sapply(unique(sub("_\\d+",
+                           "",
+                           colnames(data_proc[, 1:48]))),
+                          function(x) paste(c(x,
+                                              "_median"),
+                                            collapse = ""))] <- median_matrix_getter(data =data_proc[, 1:48],
+                     conditions = unique(sub("_\\d+",
+                           "",
+                           colnames(data_proc[, 1:48]))))
+
+#Grouped
+data_proc[, c("NORMAL_GROUPED_median",
+              "CI_GROUPED_median",
+              "DEX_GROUPED_median",
+              "TNF_GROUPED_median",
+              "MPQ_GROUPED_median",
+              "AA_GROUPED_median")] <- median_matrix_getter(data = data_proc[, grep("GROUPED_\\d+",
+                                                                                    colnames(data_proc))],
+                     conditions = c("NORMAL_GROUPED",
+              "CI_GROUPED",
+              "DEX_GROUPED",
+              "TNF_GROUPED",
+              "MPQ_GROUPED",
+              "AA_GROUPED"))
+
+
+###mean_normalised_means
+#I calculate mean in each group, and then subtract overall mean
+
+mean_normalised_means_getter <- function(data,
+                                 conditions){
+  ##Set up output
+  output_m <- matrix(NA,
+                     nrow = nrow(data),
+                     ncol = length(conditions))
+  rownames(output_m) <- rownames(data)
+  colnames(output_m) <- sapply(conditions,
+                               function(x) paste(c(x, 
+                                                   "_mean_normalised_mean"),
+                                                 collapse = ""))
+  
+  ##Loop over conditions to get means
+  for (i in 1:length(conditions)){
+    
+    temp_condition <- conditions[i]
+    output_m[, i] <- apply(data[, grep(temp_condition,
+                                       colnames(data))],
+                           1,
+                           mean,
+                           na.rm = TRUE)
+  }
+  ##Normalise means
+  print(head(output_m))
+  output_m <- output_m - apply(output_m,
+                               1,
+                               FUN = "mean")
+  
+  ##Return
+  return(output_m)
+}
+
+#Grouped
+data_proc[, c("NORMAL_GROUPED_mean_normalised_mean",
+                               "CI_GROUPED_mean_normalised_mean",
+                               "DEX_GROUPED_mean_normalised_mean",
+                               "TNF_GROUPED_mean_normalised_mean",
+                               "MPQ_GROUPED_mean_normalised_mean",
+                               "AA_GROUPED_mean_normalised_mean")] <- mean_normalised_means_getter(data_proc[, 1:48],
+                             c("NORMAL",
+                               "CI",
+                               "DEX",
+                               "TNF",
+                               "MPQ",
+                               "AA"))
+```
+
+###Stats
+
+t.tests
+```{r}
+###t_tester function
+#Adjusts by FDR
+t_tester <- function(data,
+                     groups){
+  
+    ##Set up data
+    data <- as.matrix(data)
+  
+    ##Set up output
+    output_m <- matrix(NA,
+                       nrow = nrow(data),
+                       ncol = 3)
+    rownames(output_m) <- rownames(data)
+    colnames(output_m) <- c("tval",
+                            "pval",
+                            "adj_pval")
+    
+    ##Run stats
+    for (i in 1:nrow(data)){
+
+        #Use try in case not enough observations
+        temp_test <- try(t.test(data[i, grep(groups[1],
+                                       colnames(data))],
+                          data[i, grep(groups[2],
+                                       colnames(data))]),
+                         silent = TRUE)
+        if (inherits(temp_test,
+                    "try-error")){
+           output_m[i, 1:2] <- NA
+        } else {
+          output_m[i, 1:2] <- c(temp_test$statistic,
+                           temp_test$p.value)
+        }
+    }
+    
+    ##Adjust
+    output_m[, 3] <- p.adjust(output_m[, 2],
+                                method = "fdr")
+    
+    ##Return
+    return(output_m)
+}
+
+
+###t.testing
+
+#NORMAL
+data_proc[, c("NORMAL_tval",
+              "NORMAL_pval",
+              "NORMAL_adj_pval")] <- NA
+data_proc[, c("NORMAL_tval",
+              "NORMAL_pval",
+              "NORMAL_adj_pval")] <- t_tester(data = data_proc[, c(grep("NORMAL_BASAL_\\d+",
+                                                                        colnames(data_proc)),
+                                                                   grep("NORMAL_INS_\\d+",
+                                                                        colnames(data_proc)))],
+          groups = c("NORMAL_BASAL",
+            "NORMAL_INS"))
+
+#CI
+data_proc[, c("CI_tval",
+              "CI_pval",
+              "CI_adj_pval")] <- NA
+data_proc[, c("CI_tval",
+              "CI_pval",
+              "CI_adj_pval")] <- t_tester(data = data_proc[, c(grep("CI_BASAL_\\d+",
+                                                                        colnames(data_proc)),
+                                                                   grep("CI_INS_\\d+",
+                                                                        colnames(data_proc)))],
+          groups = c("CI_BASAL",
+            "CI_INS"))
+
+#DEX
+data_proc[, c("DEX_tval",
+              "DEX_pval",
+              "DEX_adj_pval")] <- NA
+data_proc[, c("DEX_tval",
+              "DEX_pval",
+              "DEX_adj_pval")] <- t_tester(data = data_proc[, c(grep("DEX_BASAL_\\d+",
+                                                                        colnames(data_proc)),
+                                                                   grep("DEX_INS_\\d+",
+                                                                        colnames(data_proc)))],
+          groups = c("DEX_BASAL",
+            "DEX_INS"))
+
+#TNF
+data_proc[, c("TNF_tval",
+              "TNF_pval",
+              "TNF_adj_pval")] <- NA
+data_proc[, c("TNF_tval",
+              "TNF_pval",
+              "TNF_adj_pval")] <- t_tester(data = data_proc[, c(grep("TNF_BASAL_\\d+",
+                                                                        colnames(data_proc)),
+                                                                   grep("TNF_INS_\\d+",
+                                                                        colnames(data_proc)))],
+          groups = c("TNF_BASAL",
+            "TNF_INS"))
+
+#MPQ
+data_proc[, c("MPQ_tval",
+              "MPQ_pval",
+              "MPQ_adj_pval")] <- NA
+data_proc[, c("MPQ_tval",
+              "MPQ_pval",
+              "MPQ_adj_pval")] <- t_tester(data = data_proc[, c(grep("MPQ_BASAL_\\d+",
+                                                                        colnames(data_proc)),
+                                                                   grep("MPQ_INS_\\d+",
+                                                                        colnames(data_proc)))],
+          groups = c("MPQ_BASAL",
+            "MPQ_INS"))
+
+#AA
+data_proc[, c("AA_tval",
+              "AA_pval",
+              "AA_adj_pval")] <- NA
+data_proc[, c("AA_tval",
+              "AA_pval",
+              "AA_adj_pval")] <- t_tester(data = data_proc[, c(grep("AA_BASAL_\\d+",
+                                                                        colnames(data_proc)),
+                                                                   grep("AA_INS_\\d+",
+                                                                        colnames(data_proc)))],
+          groups = c("AA_BASAL",
+            "AA_INS"))
+
+
+###Summary
+#All 0
+
+length(which(data_proc$NORMAL_adj_pval < 0.05))
+length(which(data_proc$CI_adj_pval < 0.05))
+length(which(data_proc$DEX_adj_pval < 0.05))
+length(which(data_proc$TNF_adj_pval < 0.05))
+length(which(data_proc$MPQ_adj_pval < 0.05))
+length(which(data_proc$AA_adj_pval < 0.05))
+```
+
+
+
+All models anovas and dunnett's posthocs
+
+GROUPED
+```{r}
+####ANOVAs
+
+anova_tester <- function(data){
+  
+  ##Set up 
+  treatments <- sub("_\\d+",
+                    "",
+                    colnames(data))
+  treatments <- factor(treatments,
+                       levels = unique(treatments))
+  
+  output_m <- matrix(NA,
+                     nrow = nrow(data),
+                     ncol = 3)
+  rownames(output_m) <- rownames(data)
+  colnames(output_m) <- c("Fval",
+                          "pval",
+                          "adj_pval")
+  
+  ##Run tests
+  for (i in 1:nrow(data)){
+    
+    #Try ANOVA, return NA if fails
+    temp_test <- try(aov(as.numeric(data[i, ]) ~ treatments,
+                         data),
+                     silent = TRUE)
+    
+    if(inherits(temp_test,
+                "try-error")){
+      
+      output_m[i, 1:2] <- NA
+      
+    } else {
+      
+      #Extract F and p values. Check if NULL
+      F_p_vals <- c(summary(temp_test)[[1]][["F value"]][1],
+                            summary(temp_test)[[1]][["Pr(>F)"]][1])
+      if(is.null(F_p_vals)){
+        
+        output_m[i, 1:2] <- NA
+        
+      } else {
+      
+      output_m[i, 1:2] <- F_p_vals
+          
+    }
+    }
+  }
+  
+  ##Adjust
+  output_m[, 3] <- p.adjust(output_m[, 2],
+                            method = "fdr")
+  ##Return
+  return(output_m)
+}
+
+dunnetts_tester <- function(data){
+  
+  ##Set up
+  treatments <- sub("_\\d+",
+                    "",
+                    colnames(data))
+  treatments <- factor(treatments,
+                       levels = unique(treatments))
+  model_names <- levels(treatments)[-1]
+  output_m <- matrix(NA,
+                     nrow = nrow(data),
+                     ncol = 2*length(model_names))
+  rownames(output_m) <- rownames(data)
+  colnames(output_m) <- c(sapply(model_names,
+                         function(x) paste(c(x,
+                                             "_pval"),
+                                           collapse = "")),
+                  sapply(model_names,
+                         function(x) paste(c(x,
+                                             "_adj_pval"),
+                                           collapse = "")))
+  
+  ##Run stats
+  
+  for (i in 1:nrow(data)){
+    
+    temp_anova <- aov(as.numeric(data[i, ]) ~ treatments,
+                    data)
+    
+    ###THIS IS NOT WORKING
+    temp_dunnetts <- glht(temp_anova,
+       linfct = mcp(treatments = "Dunnett"))
+    
+    #Check if not all models got a pvalue
+    if (nrow(summary(temp_dunnetts)$linfct) < length(model_names)){
+      
+      temp_pvals <- summary(temp_dunnetts)$test$pvalues
+      names(temp_pvals) <- sapply(rownames(summary(temp_dunnetts)$linfct),
+                                  function(x) paste(c(strsplit(x,
+                                                       " ")[[1]][1],
+                                                      "_pval"),
+                                                    collapse = ""))
+      output_m[i, names(temp_pvals)] <- temp_pvals
+      
+    } else {
+    
+      output_m[i, 1:length(model_names)] <- summary(temp_dunnetts)$test$pvalues
+    
+    }
+  }
+  
+  
+  ##Adjust
+  #Adjust at model level
+  for (i in 1:length(model_names)){
+    
+    output_m[, length(model_names) + i] <- p.adjust(output_m[, i],
+                                                    method = "fdr")
+  }
+  
+  ##Return
+  return(output_m)
+}
+
+###Run anovas
+data_proc[, c("GROUPED_ANOVA_Fval",
+              "GROUPED_ANOVA_pval",
+              "GROUPED_ANOVA_adj_pval")] <- NA
+data_proc[, c("GROUPED_ANOVA_Fval",
+              "GROUPED_ANOVA_pval",
+              "GROUPED_ANOVA_adj_pval")] <- anova_tester(data_proc[, c(grep("NORMAL_GROUPED_\\d+",
+                             colnames(data_proc)),
+                        grep("CI_GROUPED_\\d+",
+                             colnames(data_proc)),
+                        grep("DEX_GROUPED_\\d+",
+                             colnames(data_proc)),
+                        grep("TNF_GROUPED_\\d+",
+                             colnames(data_proc)),
+                        grep("MPQ_GROUPED_\\d+",
+                             colnames(data_proc)),
+                        grep("AA_GROUPED_\\d+",
+                             colnames(data_proc)))])
+
+###Summary
+#4882/7170
+
+length(which(data_proc$GROUPED_ANOVA_adj_pval < 0.05)) 
+
+##Visualise
+
+#Unadjusted
+hist(data_proc$GROUPED_ANOVA_pval,
+     breaks = 20)
+#Adjusted
+hist(data_proc$GROUPED_ANOVA_adj_pval,
+     breaks = 20)
+
+
+
+####Dunnett's
+
+
+###Run tests
+GROUPED_dunnetts <- dunnetts_tester(data_proc[which(data_proc$GROUPED_ANOVA_adj_pval < 0.05), c(grep("NORMAL_GROUPED_\\d+",
+                             colnames(data_proc)),
+                        grep("CI_GROUPED_\\d+",
+                             colnames(data_proc)),
+                        grep("DEX_GROUPED_\\d+",
+                             colnames(data_proc)),
+                        grep("TNF_GROUPED_\\d+",
+                             colnames(data_proc)),
+                        grep("MPQ_GROUPED_\\d+",
+                             colnames(data_proc)),
+                        grep("AA_GROUPED_\\d+",
+                             colnames(data_proc)))])
+
+##Match up to df
+data_proc[, colnames(GROUPED_dunnetts)] <- NA
+for (i in 1:nrow(GROUPED_dunnetts)){
+  
+  temp_protein <- rownames(GROUPED_dunnetts)[i]
+  data_proc[temp_protein, colnames(GROUPED_dunnetts)] <- GROUPED_dunnetts[i, ]
+}
+
+
+##Summary
+#CI: 3232
+#DEX: 2895
+#TNF: 2295
+#MPQ: 85
+#AA: 38
+
+length(which(data_proc$CI_GROUPED_adj_pval < 0.05))
+length(which(data_proc$DEX_GROUPED_adj_pval < 0.05))
+length(which(data_proc$TNF_GROUPED_adj_pval < 0.05))
+length(which(data_proc$MPQ_GROUPED_adj_pval < 0.05))
+length(which(data_proc$AA_GROUPED_adj_pval < 0.05))
+```
+
+
+
+###Filtering for up and down proteins
+```{r}
+###isup, isdown in each treatment
+##Rules:
+#Significant in post hoc
+#|FC| > 0.58
+
+##Add in
+data_proc$CI_isup <- data_proc$CI_GROUPED_adj_pval < 0.05 &
+                  data_proc$CI_GROUPED_FC > 0.58
+data_proc$DEX_isup <- data_proc$DEX_GROUPED_adj_pval < 0.05 &
+                  data_proc$DEX_GROUPED_FC > 0.58
+data_proc$TNF_isup <- data_proc$TNF_GROUPED_adj_pval < 0.05 &
+                  data_proc$TNF_GROUPED_FC > 0.58
+data_proc$MPQ_isup <- data_proc$MPQ_GROUPED_adj_pval < 0.05 &
+                  data_proc$MPQ_GROUPED_FC > 0.58
+data_proc$AA_isup <- data_proc$AA_GROUPED_adj_pval < 0.05 &
+                  data_proc$AA_GROUPED_FC > 0.58
+data_proc$CI_isdown <- data_proc$CI_GROUPED_adj_pval < 0.05 &
+                  data_proc$CI_GROUPED_FC < -0.58
+data_proc$DEX_isdown <- data_proc$DEX_GROUPED_adj_pval < 0.05 &
+                  data_proc$DEX_GROUPED_FC < -0.58
+data_proc$TNF_isdown <- data_proc$TNF_GROUPED_adj_pval < 0.05 &
+                  data_proc$TNF_GROUPED_FC < -0.58
+data_proc$MPQ_isdown <- data_proc$MPQ_GROUPED_adj_pval < 0.05 &
+                  data_proc$MPQ_GROUPED_FC < -0.58
+data_proc$AA_isdown <- data_proc$AA_GROUPED_adj_pval < 0.05 &
+                  data_proc$AA_GROUPED_FC < -0.58
+
+##Turn NA to FALSE
+data_proc$CI_isup[which(is.na(data_proc$CI_isup))] <- FALSE
+data_proc$DEX_isup[which(is.na(data_proc$DEX_isup))] <- FALSE
+data_proc$TNF_isup[which(is.na(data_proc$TNF_isup))] <- FALSE
+data_proc$MPQ_isup[which(is.na(data_proc$MPQ_isup))] <- FALSE
+data_proc$AA_isup[which(is.na(data_proc$AA_isup))] <- FALSE
+data_proc$CI_isdown[which(is.na(data_proc$CI_isdown))] <- FALSE
+data_proc$DEX_isdown[which(is.na(data_proc$DEX_isdown))] <- FALSE
+data_proc$TNF_isdown[which(is.na(data_proc$TNF_isdown))] <- FALSE
+data_proc$MPQ_isdown[which(is.na(data_proc$MPQ_isdown))] <- FALSE
+data_proc$AA_isdown[which(is.na(data_proc$AA_isdown))] <- FALSE
+
+##Protein_isup and protein_isdown
+#Up/down in at least one protein, and not down/up in any other
+data_proc$proteinisup <- FALSE
+data_proc[which(rowSums(data_proc[, grep("_isup",
+                                         colnames(data_proc))]) > 0), 
+          "proteinisup"] <- TRUE
+data_proc$proteinisdown <- FALSE
+data_proc[which(rowSums(data_proc[, grep("_isdown",
+                                         colnames(data_proc))]) > 0), 
+          "proteinisdown"] <- TRUE
+data_proc[which(rowSums(data_proc[, grep("proteinis",
+                         colnames(data_proc))]) == 2),  grep("proteinis",
+                         colnames(data_proc))] <- c(FALSE, FALSE)
+
+
+##numisup_models
+data_proc$numisupmodels <- NA
+data_proc[data_proc$proteinisup, 
+          "numisupmodels"] <- rowSums(data_proc[data_proc$proteinisup, grep("_isup",
+                                                       colnames(data_proc))])
+data_proc$numisdownmodels <- NA
+data_proc[data_proc$proteinisdown, 
+          "numisdownmodels"] <- rowSums(data_proc[data_proc$proteinisdown, grep("_isdown",
+                                                       colnames(data_proc))])
+```
+
+
+###Make GROUPED only df
+```{r}
+data_proc_grouped <- data_proc[, c(grep("GROUPED",
+                                      colnames(data_proc)),
+                                   grep("_isup",
+                                        colnames(data_proc)),
+                                   grep("_isdown",
+                                        colnames(data_proc)),
+                                   which(colnames(data_proc) %in%
+                                           c("proteinisup",
+                                             "proteinisdown",
+                                             "numisupmodels",
+                                             "numisdownmodels")),
+                                   which(colnames(data_proc) %in%
+                                           c("gene",
+                                             "uniprot")))]
+
+###Export for SJ
+data_proc_grouped_export <- data_proc_grouped
+colnames(data_proc_grouped_export) <- sub("GROUPED_",
+                                          "",
+                                          colnames(data_proc_grouped_export))
+write.csv(data_proc_grouped_export,
+          "output/data/IR_proteome_analysed.csv")
+
+###Export data_proc and data_proc_grouped
+save(data_proc,
+     file = "output/data/prot_data_proc_wstats__1.RData")
+
+proteome_post_analysis_3t3 <- data_proc_grouped
+save(proteome_post_analysis_3t3,
+     file = "output/data/proteome_post_analysis_3t3.RData")
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

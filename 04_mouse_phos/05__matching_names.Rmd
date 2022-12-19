@@ -1,0 +1,93 @@
+---
+title: "05__matching_names__2"
+output: html_document
+---
+
+
+Background:
+
+Assess overlap between mouse and DIA 3t3l1
+
+
+Version info:
+
+1
+
+
+2
+
+Use newest phos_mouse_data_filt_norm_imp_stats__2
+
+
+###Initialise
+Load in data
+```{r}
+load("data/intermediate/phos_mouse_data_filt_norm_imp_stats__2.RData")
+```
+
+
+###Create phosmatched df
+```{r}
+#rownames
+phos_mouse_data_filt_norm_imp_stats_phosmatched <- phos_mouse_data_filt_norm_imp_stats
+phos_mouse_data_filt_norm_imp_stats_phosmatched$old_standard_name <- rownames(phos_mouse_data_filt_norm_imp_stats_phosmatched)
+rownames(phos_mouse_data_filt_norm_imp_stats_phosmatched) <- phos_mouse_data_filt_norm_imp_stats_phosmatched$phosmatched_standard_name
+
+#other columns - gene, uniprot, uniprot_site
+phos_mouse_data_filt_norm_imp_stats_phosmatched$standard_name <- phos_mouse_data_filt_norm_imp_stats_phosmatched$phosmatched_standard_name
+phos_mouse_data_filt_norm_imp_stats_phosmatched$gene <- sapply(phos_mouse_data_filt_norm_imp_stats_phosmatched$standard_name,
+                                                               function(x) strsplit(x,
+                                                                                    "_")[[1]][1])
+phos_mouse_data_filt_norm_imp_stats_phosmatched$uniprot <- sapply(phos_mouse_data_filt_norm_imp_stats_phosmatched$standard_name,
+                                                               function(x) strsplit(x,
+                                                                                    "_")[[1]][2])
+phos_mouse_data_filt_norm_imp_stats_phosmatched$site <- sapply(phos_mouse_data_filt_norm_imp_stats_phosmatched$standard_name,
+                                                               function(x) strsplit(x,
+                                                                                    "_")[[1]][3])
+phos_mouse_data_filt_norm_imp_stats_phosmatched$multiplicity <- sapply(phos_mouse_data_filt_norm_imp_stats_phosmatched$standard_name,
+                                                               function(x) strsplit(x,
+                                                                                    "_")[[1]][4])
+phos_mouse_data_filt_norm_imp_stats_phosmatched$uniprot_site <- 
+  apply(phos_mouse_data_filt_norm_imp_stats_phosmatched[, c("uniprot",
+                                                            "site")],
+        1,
+        function(x) paste(x, collapse = "_"))
+```
+
+
+
+
+###Export phosmatched
+```{r}
+save(phos_mouse_data_filt_norm_imp_stats_phosmatched,
+     file = "output/data/phos_mouse_data_filt_norm_imp_stats_phosmatched__2.RData")
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

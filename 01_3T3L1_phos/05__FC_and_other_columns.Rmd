@@ -1,0 +1,321 @@
+---
+title: "05__FC_and_other_columns__1"
+output: html_document
+---
+
+
+Background
+
+Here I add FC, median, mean, z-score, and other columns
+
+
+Version info
+
+
+###Initialise
+
+Packages
+```{r}
+library(reshape2)
+```
+
+
+###Load in data
+```{r}
+load("data/intermediate/phos_3t3/phos_3t3_filt_norm_imp_below_ds1_looser2stats_stats__1.RData")
+
+phos_3t3_filt_norm_imp_below_ds1_looser2stats_stats_cols <- phos_3t3_filt_norm_imp_below_ds1_looser2stats_stats
+```
+
+
+####Adding columns
+
+gene_uniprot
+```{r}
+phos_3t3_filt_norm_imp_below_ds1_looser2stats_stats_cols$gene_uniprot <- apply(phos_3t3_filt_norm_imp_below_ds1_looser2stats_stats_cols[, c("gene",
+                                                                                              "uniprot")],
+                                                        1,
+                                                        function(x) paste(x, 
+                                                                          collapse = "_"))
+```
+
+FCs:
+INS/BAS
+MODEL/CTRL for INS and BAS
+
+Median
+Average
+
+z-score
+z-score medians
+
+FC
+```{r}
+####INS_vs_BAS FCs
+
+
+###Function: Makes treatment vs basal FCs for given models
+#Data is data, columns of format MODEL_BAS/TREATMENT_n e.g. CTRL_INS_4
+#method is "median" or "mean"
+#models are models e.g. CTRL, CI, DEX
+#bas_treatment are names for basal and treatment e.g. BAS, INS
+treatment_vs_bas_logFC_maker <- function(data,
+                                         method = "median",
+                                         models,
+                                         bas_treatment){
+      
+      ##Set up output
+      FC_data <- matrix(NA,
+                        nrow = nrow(data),
+                        ncol = length(models))
+      rownames(FC_data) <- rownames(data)
+      colnames(FC_data) <- sapply(models,
+                                  function(x) paste(c(x, "_FC"),
+                                                    collapse = ""))
+      
+      ##Iterate over models
+      for (j in 1:length(models)){
+        
+        FC_data[, j] <- apply(data[, grep(paste(c(models[j],
+                                                  "_",
+                                                  bas_treatment[2],
+                                                  "_\\d+"),
+                                                collapse = ""),
+                                          colnames(data))],
+                              1,
+                              FUN = method,
+                              na.rm = TRUE) - 
+          apply(data[, grep(paste(c(models[j],
+                                                  "_",
+                                                  bas_treatment[1],
+                                                  "_\\d+"),
+                                  collapse = ""),
+                                          colnames(data))],
+                              1,
+                              FUN = method,
+                              na.rm = TRUE)
+      }
+      
+      return(FC_data)
+}
+
+
+###Assign FCs
+phos_3t3_filt_norm_imp_below_ds1_looser2stats_stats_cols[, c("CTRL_FC",
+                                      "CI_FC",
+                                      "DEX_FC",
+                                      "TNF_FC",
+                                      "MPQ_FC",
+                                      "AA_FC")] <- 
+  treatment_vs_bas_logFC_maker(data = phos_3t3_filt_norm_imp_below_ds1_looser2stats_stats_cols,
+                               method = "median",
+                               models = c("CTRL",
+           "CI",
+           "DEX",
+           "TNF",
+           "MPQ",
+           "AA"),
+           bas_treatment = c("BAS",
+                   "INS"))
+
+
+
+
+
+
+####Models vs ctrl
+
+
+###Function: Makes model vs ctrl FCs
+#Data is data, columns of format MODEL_BAS/TREATMENT_n e.g. CTRL_INS_4
+#method is "median" or "mean"
+#models are models e.g. CI_BAS, DEX_BAS
+#control is name for control e.g. CTRL_BAS, CTRL_INS
+model_vs_ctrl_logFC_maker <- function(data,
+                                      method = "median",
+                                      models,
+                                      control){
+
+
+    ##Set up data
+    FC_data <- matrix(NA,
+                      nrow = nrow(data),
+                      ncol = length(models))
+    rownames(FC_data) <- rownames(data)
+    colnames(FC_data) <- sapply(models,
+                                function(x) paste(c(x, "_FC"),
+                                                  collapse = ""))
+    
+    ##Get CTRL medians or (means)
+    CTRL_medians <- apply(data[, grep(paste(c(control,
+                                              "_\\d+"),
+                                            collapse = ""),
+                                      colnames(data))],
+                          1,
+                          FUN = method,
+                          na.rm = TRUE)
+    
+    ##Loop over models
+    for (j in 1:length(models)){
+      
+      FC_data[, j] <- apply(data[, grep(paste(c(models[j],
+                                              "_\\d+"),
+                                            collapse = ""),
+                                      colnames(data))],
+                          1,
+                          FUN = method,
+                          na.rm = TRUE) -
+        CTRL_medians
+    }
+    
+    return(FC_data)
+}
+
+
+###Assign FCs
+phos_3t3_filt_norm_imp_below_ds1_looser2stats_stats_cols[, c("CI_FC_on_control_BAS",
+           "DEX_FC_on_control_BAS",
+           "TNF_FC_on_control_BAS",
+           "MPQ_FC_on_control_BAS",
+           "AA_FC_on_control_BAS")] <- 
+  model_vs_ctrl_logFC_maker(data = phos_3t3_filt_norm_imp_below_ds1_looser2stats_stats_cols,
+                            models = c("CI_BAS",
+                                           "DEX_BAS",
+                                           "TNF_BAS",
+                                           "MPQ_BAS",
+                                           "AA_BAS"),
+                            control = "CTRL_BAS")
+phos_3t3_filt_norm_imp_below_ds1_looser2stats_stats_cols[, c("CI_FC_on_control_INS",
+           "DEX_FC_on_control_INS",
+           "TNF_FC_on_control_INS",
+           "MPQ_FC_on_control_INS",
+           "AA_FC_on_control_INS")] <- 
+  model_vs_ctrl_logFC_maker(data = phos_3t3_filt_norm_imp_below_ds1_looser2stats_stats_cols,
+                            models = c("CI_INS",
+                                           "DEX_INS",
+                                           "TNF_INS",
+                                           "MPQ_INS",
+                                           "AA_INS"),
+                            control = "CTRL_INS")
+```
+
+Medians and means
+```{r}
+##Make conditions
+conditions <- unique(gsub("_\\d+",
+                          "",
+                          colnames(phos_3t3_filt_norm_imp_below_ds1_looser2stats_stats_cols)[1:52]))
+
+##Assign medians and mean by looping over conditions
+for (i in 1:length(conditions)){
+  
+  phos_3t3_filt_norm_imp_below_ds1_looser2stats_stats_cols[, paste(c(conditions[i],
+                                              "_mean"),
+                                            collapse = "")] <- 
+    apply(phos_3t3_filt_norm_imp_below_ds1_looser2stats_stats_cols[, grep(paste(c(conditions[i],
+                                                           "_\\d+"),
+                                                         collapse = ""),
+                                                   colnames(phos_3t3_filt_norm_imp_below_ds1_looser2stats_stats_cols))],
+          1,
+          FUN = "mean",
+          na.rm = TRUE)
+  phos_3t3_filt_norm_imp_below_ds1_looser2stats_stats_cols[, paste(c(conditions[i],
+                                              "_median"),
+                                            collapse = "")] <- 
+    apply(phos_3t3_filt_norm_imp_below_ds1_looser2stats_stats_cols[, grep(paste(c(conditions[i],
+                                                           "_\\d+"),
+                                                         collapse = ""),
+                                                   colnames(phos_3t3_filt_norm_imp_below_ds1_looser2stats_stats_cols))],
+          1,
+          FUN = "median",
+          na.rm = TRUE)
+}
+```
+
+z-score and z-score medians
+```{r}
+###Z-score 3T3-L1 data
+z_scorer <- function(data){
+  
+  row_means <- apply(data,
+                     1,
+                     mean,
+                     na.rm = TRUE)
+  row_sds <- apply(data,
+                   1,
+                   sd,
+                   na.rm = TRUE)
+  no_mean_data <- sweep(data,
+                        1,
+                        row_means,
+                        FUN = "-")
+  z_data <- sweep(no_mean_data,
+                  1,
+                  row_sds,
+                  FUN = "/")
+  return(z_data)
+}
+
+phos_3t3_filt_norm_imp_zscore <- z_scorer(phos_3t3_filt_norm_imp_below_ds1_looser2stats_stats_cols[, 1:52])
+
+
+###Site medians for each condition
+
+##Medians for each condition
+median_getter <- function(data, i) apply(data[, grep(conditions[i],
+                        colnames(data))],
+                          1,
+                          median,
+                          na.rm = TRUE)
+
+phos_3t3_filt_norm_imp_zscore_medians <- as.data.frame(cbind(median_getter(phos_3t3_filt_norm_imp_zscore, 1),
+                            median_getter(phos_3t3_filt_norm_imp_zscore, 2),
+                            median_getter(phos_3t3_filt_norm_imp_zscore, 3),
+                            median_getter(phos_3t3_filt_norm_imp_zscore, 4),
+                            median_getter(phos_3t3_filt_norm_imp_zscore, 5),
+                            median_getter(phos_3t3_filt_norm_imp_zscore, 6),
+                            median_getter(phos_3t3_filt_norm_imp_zscore, 7),
+                            median_getter(phos_3t3_filt_norm_imp_zscore, 8),
+                            median_getter(phos_3t3_filt_norm_imp_zscore, 9),
+                            median_getter(phos_3t3_filt_norm_imp_zscore, 10),
+                            median_getter(phos_3t3_filt_norm_imp_zscore, 11),
+                            median_getter(phos_3t3_filt_norm_imp_zscore, 12)))
+colnames(phos_3t3_filt_norm_imp_zscore_medians) <- conditions
+
+
+###Export
+save(phos_3t3_filt_norm_imp_zscore,
+     file = "output/data/phos_3t3_filt_norm_imp_zscore__1.RData")
+save(phos_3t3_filt_norm_imp_zscore_medians,
+     file = "output/data/phos_3t3_filt_norm_imp_zscore_medians__1.RData")
+```
+
+
+###Export
+```{r}
+save(phos_3t3_filt_norm_imp_below_ds1_looser2stats_stats_cols,
+     file = "output/data/phos_3t3_filt_norm_imp_below_ds1_looser2stats_stats_cols__1.RData")
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

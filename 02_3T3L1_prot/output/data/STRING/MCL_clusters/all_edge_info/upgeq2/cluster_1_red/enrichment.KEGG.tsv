@@ -1,0 +1,3 @@
+#term ID	term description	observed gene count	background gene count	strength	false discovery rate	matching proteins in your network (IDs)	matching proteins in your network (labels)
+mmu03040	Spliceosome	5	130	1.59	2.50e-06	10090.ENSMUSP00000020681,10090.ENSMUSP00000025997,10090.ENSMUSP00000030622,10090.ENSMUSP00000042658,10090.ENSMUSP00000105985	Slu7,Smndc1,Syf2,Hnrnpa1,Srsf5
+mmu03022	Basal transcription factors	2	43	1.67	0.0059	10090.ENSMUSP00000021345,10090.ENSMUSP00000109123	Gtf2a1,Taf9b

@@ -1,0 +1,193 @@
+---
+title: "02__QC__1"
+output: html_document
+---
+
+
+Background:
+
+Classic QC (PCA, NA per sample barplot, clustered dendogram, correlation heatmap)
+
+
+Version info:
+
+1
+
+
+###Initialise
+```{r}
+library(ggplot2)
+library(corrplot)
+library(stringr)
+library(dplyr)
+library(reshape2)
+library(dendextend)
+source("..\\scripts/3T3L1_mouse_IR__DF__202104_objects.R")
+source("..\\scripts/essential_visualisations_JvG.R")
+```
+
+Load in data
+```{r}
+load("data/intermediate/phos_mouse_raw_data_filt_norm__1.RData")
+load("data/intermediate/phos_mouse_raw_data_norm__2.RData")
+```
+
+Plots:
+```{r}
+###Corrplot:
+corr_m <- cor(phos_mouse_raw_data_filt_norm[, 1:72], use = "pairwise.complete.obs")
+pdf("output/images/QC/corr_heatmap_mouse.pdf")
+corrplot(corr_m, method = "color", type = "upper", order = "hclust", tl.cex = 0.5, col = c(rep("black", 700), colorRampPalette(c("white", "blue"))(100)))
+dev.off()
+#Expot
+write.csv(corr_m, file = "output/data/QC/corr_m.csv")
+
+###PCA:
+pca <- prcomp(t(na.omit(phos_mouse_raw_data_filt_norm[, 1:72])), center = TRUE, scale. = FALSE)
+summary(pca)
+##Dataframe with PC1, PC2 values, mice names, and treatments
+pca_df <- as.data.frame(pca$x[, c(1, 2)], stringsasfactors = FALSE)
+pca_df$Name <- rownames(pca_df)
+pca_df$Treatment <- sapply(pca_df$Name,
+                           function(x) strsplit(x, "_")[[1]][1])
+
+
+pca_plot <- ggplot() + 
+  geom_point(data = pca_df,
+             aes(x = PC1,
+                 y = PC2,
+                 color = Treatment),
+             size = 3,
+             shape = 21,
+             stroke = 1,
+             alpha = 1) +
+  geom_point(data = pca_df[grep("INS",
+                                pca_df$Name), ],
+             aes(x = PC1,
+                 y = PC2,
+                 color = Treatment),
+             size = 3,
+             alpha = 0.4) +
+  scale_colour_manual(values = SH_mouse_main_colours) + 
+  labs(x = "PC1 (10.1%)",
+       y = "PC2 (8.7%)") +
+  theme(panel.background = element_blank(),
+        panel.grid = element_blank(),
+        axis.line = element_line(colour = "black"),
+        plot.title = element_text(hjust = 0.5),
+        axis.text = element_text(colour = "black"))
+plot(pca_plot) +
+  ggtitle("PCA") 
+  ggsave("output/images/QC/PCA_mouse.pdf",
+         width = 5,
+         height = 5)
+
+#Export
+write.csv(pca_df, file = "output/data/QC/pca.csv")
+
+
+
+###Hclust:
+dist_m <- dist(t(phos_mouse_raw_data_filt_norm[, 1:72]))
+h_clust <- hclust(dist_m)
+h_dend <- as.dendrogram(h_clust)
+h_dend_cols <- c(rep("#3F403F",
+                     24),
+                 rep("#1C75BC",
+                     24),
+                 rep("#662D91",
+                     24))
+labels_colors(h_dend) <- h_dend_cols[order.dendrogram(h_dend)]
+labels_cex(h_dend) <- 0.5
+pdf("output/images/QC/cluster_dendogram_mouse.pdf")
+plot(h_dend)
+dev.off()
+```
+
+Missing values:
+```{r}
+library(tidyverse)
+#Prepare
+sample_quant_df <- data.frame("name" = colnames(phos_mouse_raw_data_norm)[1:72],
+                              "quant" = colSums(!is.na(phos_mouse_raw_data_norm[, 1:72]))) %>%
+  mutate(model = sapply(.[, "name"], function(x) strsplit(x, "_")[[1]][1])) %>%
+  rbind(c("Total_INS", length(which(rowSums(!is.na(phos_mouse_raw_data_norm[, 1:72])) > 0)), "Total")) %>%
+  mutate(model = factor(model, levels = unique(model))) %>%
+  mutate(name = factor(name, levels = unique(name))) %>%
+  mutate(quant = as.numeric(quant))
+
+#plot
+ggplot() +
+  geom_col(data = sample_quant_df,
+           aes(x = name,
+               y = quant,
+               colour = model),
+           fill = "white",
+           size = 0.25,
+           width = 0.7) +
+  geom_col(data = sample_quant_df[grep("INS",
+                                              sample_quant_df$name), ],
+           aes(x = name,
+               y = quant,
+               fill = model),
+           alpha = 0.4) +
+  scale_colour_manual(values = c(SH_mouse_main_colours, "#bfbebe"),
+                      name = "Condition") +
+  scale_fill_manual(values = c(SH_mouse_main_colours, "#bfbebe"),
+                    name = "Condition") +
+  comfy_theme() +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5, size = 7, colour = "black")) +
+  expand_limits(y = 0) +
+  labs(x = "Sample",
+       y = "# phosphopeptides") +
+  ggtitle("Mouse Phosphoproteome Missingness")
+ggsave("output/images/QC/bplot_mouse_phospho_quant.pdf",
+       width = 5, height = 2)
+
+#Export
+write.csv(sample_quant_df, file = "output/data/QC/sample_quant_df.csv")
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,2 @@
+#term ID	term description	observed gene count	background gene count	strength	false discovery rate	matching proteins in your network (IDs)	matching proteins in your network (labels)
+mmu04144	Endocytosis	3	258	1.37	0.0048	10090.ENSMUSP00000025239,10090.ENSMUSP00000034713,10090.ENSMUSP00000079689	Bin1,Ldlr,Dab2
